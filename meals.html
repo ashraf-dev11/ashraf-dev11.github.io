@@ -1,1 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خطة وجبات اليوم</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #d2fefd, #a1eafb);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 700px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #0096c7;
+        }
+        table {
+            width: 100%;
+        }
+        th, td {
+            text-align: center;
+            padding: 10px;
+        }
+        th {
+            background-color: #00b4d8;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #caf0f8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>خطة وجبات اليوم</h1>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>الوجبة</th>
+                <th>مثال وجبة</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>الإفطار</td>
+                <td>2 بيض + شوفان + فواكه</td>
+            </tr>
+            <tr>
+                <td>سناك صباحي</td>
+                <td>زبادي طبيعي + مكسرات</td>
+            </tr>
+            <tr>
+                <td>الغداء</td>
+                <td>صدر دجاج + أرز + خضار</td>
+            </tr>
+            <tr>
+                <td>سناك مسائي</td>
+                <td>تفاح + قطعة جبن</td>
+            </tr>
+            <tr>
+                <td>العشاء</td>
+                <td>سمك أو تونة + سلطة</td>
+            </tr>
+        </tbody>
+    </table>
+    <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">الرجوع للحاسبة</button>
+</div>
+
+</body>
+</html>
 
