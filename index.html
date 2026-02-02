@@ -57,6 +57,28 @@
             font-size: 1.1em;
             margin-bottom: 8px;
         }
+
+        /* زر شات البوت */
+        .bot-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg,#00c853,#64dd17);
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 30px;
+            color: #000;
+            z-index: 999;
+        }
+        .bot-btn:hover {
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +105,9 @@
 
     <div class="results-bar" id="result" style="display:none;"></div>
 </div>
+
+<!-- زر شات بوت ثابت أسفل على اليمين -->
+<div class="bot-btn" onclick="window.location.href='chat.html'">💬</div>
 
 <script>
     function calculate() {
