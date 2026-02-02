@@ -1,10 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar">
 <head>
-    <title>موقعي الأول</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة السعرات اليومية</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ff6f61;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #ff6f61;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #ff3b2f;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffe9e5;
+            border-radius: 10px;
+            border: 1px solid #ffb3a7;
+        }
+        p {
+            font-size: 1.1em;
+        }
+    </style>
 </head>
 <body>
-    <h1>أهلاً بك في موقعي على GitHub Pages!</h1>
-    <p>ده أول موقع ليا، وبكرة هيبقى فيه حاجات أحسن 😊</p>
+
+<div class="container">
+    <h1>حاسبة السعرات اليومية</h1>
+
+    <label>الوزن (كجم):</label>
+    <input type="number" id="weight" class="form-control">
+
+    <label>الطول (سم):</label>
+    <input type="number" id="height" class="form-control">
+
+    <label>العمر (سنة):</label>
+    <input type="number" id="age" class="form-control">
+
+    <label>مستوى النشاط:</label>
+    <select id="activity" class="form-select">
+        <option value="1.2">قليل النشاط</option>
+        <option value="1.375">نشاط خفيف</option>
+        <option value="1.55">نشاط متوسط</option>
+        <option value="1.725">نشاط عالي</option>
+    </select>
+
+    <label>الهدف:</label>
+    <select id="goal" class="form-select">
+        <option value="-500">خسارة وزن</option>
+        <option value="0">تثبيت الوزن</option>
+        <option value="500">زيادة وزن</option>
+    </select>
+
+    <button class="btn mt-3" onclick="calculate()">احسب الآن</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    function calculate() {
+        let weight = parseFloat(document.getElementById("weight").value);
+        let height = parseFloat(document.getElementById("height").value);
+        let age = parseInt(document.getElementById("age").value);
+        let activity = parseFloat(document.getElementById("activity").value);
+        let goal = parseInt(document.getElementById("goal").value);
+
+        if(!weight || !height || !age) {
+            alert("من فضلك املأ كل الحقول!");
+            return;
+        }
+
+        // معادلة Harris-Benedict للرجال
+        let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+        let calories = Math.round(bmr * activity + goal);
+
+        let protein = Math.round(weight * 1.8);
+        let fat = Math.round(weight * 0.8);
+        let carbs = Math.round((calories - (protein*4 + fat*9)) / 4);
+
+        document.getElementById("result").innerHTML =
+            `<h3>النتيجة:</h3>
+            <p>السعرات اليومية: <strong>${calories} سعر حراري</strong></p>
+            <p>البروتين: <strong>${protein} جرام</strong></p>
+            <p>الدهون: <strong>${fat} جرام</strong></p>
+            <p>الكربوهيدرات: <strong>${carbs} جرام</strong></p>`;
+    }
+</script>
+
 </body>
 </html>
