@@ -67,7 +67,7 @@ label {
     margin-bottom: 8px;
 }
 
-/* زر الشات البوت */
+/* زر شات البوت */
 .bot-btn {
     position: fixed;
     bottom: 20px;
@@ -84,9 +84,16 @@ label {
     font-size: 30px;
     color: #000;
     z-index: 999;
+    animation: bounce 2s infinite;
 }
 .bot-btn:hover {
     opacity: 0.9;
+}
+
+/* حركة بسيطة للزر لجذب الانتباه */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
 }
 </style>
 </head>
