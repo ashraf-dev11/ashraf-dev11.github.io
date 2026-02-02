@@ -43,7 +43,7 @@
 
 <div class="container">
     <h1>خطة وجبات اليوم</h1>
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="mealsTable">
         <thead>
             <tr>
                 <th>الوجبة</th>
@@ -51,31 +51,50 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>الإفطار</td>
-                <td>2 بيض + شوفان + فواكه</td>
-            </tr>
-            <tr>
-                <td>سناك صباحي</td>
-                <td>زبادي طبيعي + مكسرات</td>
-            </tr>
-            <tr>
-                <td>الغداء</td>
-                <td>صدر دجاج + أرز + خضار</td>
-            </tr>
-            <tr>
-                <td>سناك مسائي</td>
-                <td>تفاح + قطعة جبن</td>
-            </tr>
-            <tr>
-                <td>العشاء</td>
-                <td>سمك أو تونة + سلطة</td>
-            </tr>
         </tbody>
     </table>
-    <button class="btn btn-secondary mt-3" onclick="window.location.href='index.html'">الرجوع للحاسبة</button>
+    <div class="d-flex justify-content-between">
+        <button class="btn btn-secondary" onclick="generateMeals()">تغيير الوجبات</button>
+        <button class="btn btn-primary" onclick="window.location.href='index.html'">الرجوع للحاسبة</button>
+    </div>
 </div>
+
+<script>
+    // وجبات جاهزة لكل هدف
+    const mealOptions = {
+        cut: [
+            ["الإفطار", ["بيض + خضار", "زبادي + فواكه", "شوفان + حليب خالي الدسم"]],
+            ["سناك صباحي", ["تفاح + مكسرات", "خيار وجزر"]],
+            ["الغداء", ["صدر دجاج + سلطة", "سمك مشوي + خضار"]],
+            ["سناك مسائي", ["زبادي + بذور", "بيض مسلوق"]],
+            ["العشاء", ["سلطة + تونة", "خضار مسلوقة + صدر دجاج صغير"]]
+        ],
+        bulk: [
+            ["الإفطار", ["بيض + خبز + أفوكادو", "شوفان + موز + حليب كامل الدسم"]],
+            ["سناك صباحي", ["مكسرات + عصير طبيعي", "زبادي + موز"]],
+            ["الغداء", ["أرز + لحم + خضار", "مكرونة + دجاج + زيت زيتون"]],
+            ["سناك مسائي", ["توست + جبن + زبدة فول سوداني", "كريب بالفول السوداني"]],
+            ["العشاء", ["سمك + بطاطس مشوية", "دجاج + أرز + خضار"]]
+        ]
+    };
+
+    function generateMeals() {
+        const goal = localStorage.getItem("goal") || "cut";
+        const tableBody = document.querySelector("#mealsTable tbody");
+        tableBody.innerHTML = ""; // مسح الجدول القديم
+
+        mealOptions[goal].forEach(meal => {
+            const mealsList = meal[1];
+            // نختار وجبة عشوائية من الخيارات
+            const randomMeal = mealsList[Math.floor(Math.random() * mealsList.length)];
+            const row = `<tr><td>${meal[0]}</td><td>${randomMeal}</td></tr>`;
+            tableBody.innerHTML += row;
+        });
+    }
+
+    // توليد الوجبات أول مرة عند فتح الصفحة
+    generateMeals();
+</script>
 
 </body>
 </html>
-
