@@ -28,23 +28,33 @@
             font-weight: bold;
             margin-top: 10px;
         }
-        button {
+        #calculateBtn {
+            width: 100%;
+            padding: 15px;
+            font-weight: bold;
             background-color: #ff6f61;
             color: white;
-            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            margin-top: 15px;
         }
-        button:hover {
+        #calculateBtn:hover {
             background-color: #ff3b2f;
         }
-        .result {
+        .results-bar {
             margin-top: 20px;
             padding: 20px;
             background-color: #ffe9e5;
-            border-radius: 10px;
+            border-radius: 15px;
             border: 1px solid #ffb3a7;
         }
-        p {
+        .results-bar h3 {
+            color: #ff6f61;
+            margin-bottom: 15px;
+        }
+        .results-bar p {
             font-size: 1.1em;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -62,24 +72,9 @@
     <label>العمر (سنة):</label>
     <input type="number" id="age" class="form-control">
 
-    <label>مستوى النشاط:</label>
-    <select id="activity" class="form-select">
-        <option value="1.2">قليل النشاط</option>
-        <option value="1.375">نشاط خفيف</option>
-        <option value="1.55">نشاط متوسط</option>
-        <option value="1.725">نشاط عالي</option>
-    </select>
+    <button id="calculateBtn" onclick="calculate()">احسب الآن</button>
 
-    <label>الهدف:</label>
-    <select id="goal" class="form-select">
-        <option value="-500">خسارة وزن</option>
-        <option value="0">تثبيت الوزن</option>
-        <option value="500">زيادة وزن</option>
-    </select>
-
-    <button class="btn mt-3" onclick="calculate()">احسب الآن</button>
-
-    <div class="result" id="result"></div>
+    <div class="results-bar" id="result" style="display:none;"></div>
 </div>
 
 <script>
@@ -87,24 +82,23 @@
         let weight = parseFloat(document.getElementById("weight").value);
         let height = parseFloat(document.getElementById("height").value);
         let age = parseInt(document.getElementById("age").value);
-        let activity = parseFloat(document.getElementById("activity").value);
-        let goal = parseInt(document.getElementById("goal").value);
 
         if(!weight || !height || !age) {
             alert("من فضلك املأ كل الحقول!");
             return;
         }
 
-        // معادلة Harris-Benedict للرجال
+        // معادلة Harris-Benedict للرجال + ثابت نشاط متوسط
         let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-        let calories = Math.round(bmr * activity + goal);
+        let calories = Math.round(bmr * 1.55); // ثابت نشاط متوسط
 
         let protein = Math.round(weight * 1.8);
         let fat = Math.round(weight * 0.8);
         let carbs = Math.round((calories - (protein*4 + fat*9)) / 4);
 
+        document.getElementById("result").style.display = "block";
         document.getElementById("result").innerHTML =
-            `<h3>النتيجة:</h3>
+            `<h3>خطة الأكل اليومية</h3>
             <p>السعرات اليومية: <strong>${calories} سعر حراري</strong></p>
             <p>البروتين: <strong>${protein} جرام</strong></p>
             <p>الدهون: <strong>${fat} جرام</strong></p>
