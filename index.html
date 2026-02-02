@@ -73,6 +73,12 @@
     <label>العمر (سنة):</label>
     <input type="number" id="age" class="form-control">
 
+    <label>هدفك:</label>
+    <select id="goal" class="form-select">
+        <option value="cut">تنشيف</option>
+        <option value="bulk">تضخيم</option>
+    </select>
+
     <button id="calculateBtn" onclick="calculate()">احسب الآن</button>
 
     <div class="results-bar" id="result" style="display:none;"></div>
@@ -83,6 +89,7 @@
         let weight = parseFloat(document.getElementById("weight").value);
         let height = parseFloat(document.getElementById("height").value);
         let age = parseInt(document.getElementById("age").value);
+        let goal = document.getElementById("goal").value;
 
         if(!weight || !height || !age) {
             alert("من فضلك املأ كل الحقول!");
@@ -91,13 +98,26 @@
 
         // معادلة Harris-Benedict للرجال + ثابت نشاط متوسط
         let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
-        let calories = Math.round(bmr * 1.55); // ثابت نشاط متوسط
+        let calories;
+
+        if(goal === "cut") {
+            calories = Math.round(bmr * 1.55 - 500); // تنشيف = أقل 500 سعر حراري
+        } else {
+            calories = Math.round(bmr * 1.55 + 500); // تضخيم = أكثر 500 سعر حراري
+        }
 
         let protein = Math.round(weight * 1.8);
         let fat = Math.round(weight * 0.8);
         let carbs = Math.round((calories - (protein*4 + fat*9)) / 4);
 
         document.getElementById("result").style.display = "block";
+        // حفظ البيانات في LocalStorage عشان الصفحة التانية تستخدمها
+        localStorage.setItem("calories", calories);
+        localStorage.setItem("protein", protein);
+        localStorage.setItem("fat", fat);
+        localStorage.setItem("carbs", carbs);
+        localStorage.setItem("goal", goal);
+
         document.getElementById("result").innerHTML =
             `<h3>خطة الأكل اليومية</h3>
             <p>السعرات اليومية: <strong>${calories} سعر حراري</strong></p>
