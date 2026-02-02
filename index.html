@@ -3,143 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>خطة وجبات اليوم</title>
+    <title>حاسبة السعرات اليومية</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
         body {
-            background: linear-gradient(to right, #d2fefd, #a1eafb);
+            background: linear-gradient(to right, #ffecd2, #fcb69f);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             background: white;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             margin-top: 50px;
         }
         h1 {
             text-align: center;
             margin-bottom: 30px;
-            color: #0096c7;
+            color: #ff6f61;
         }
-        table th {
-            background-color: #00b4d8;
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        #calculateBtn {
+            width: 100%;
+            padding: 15px;
+            font-weight: bold;
+            background-color: #ff6f61;
             color: white;
+            border: none;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        #calculateBtn:hover {
+            background-color: #ff3b2f;
+        }
+        .results-bar {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffe9e5;
+            border-radius: 15px;
+            border: 1px solid #ffb3a7;
             text-align: center;
         }
-        table td {
-            text-align: center;
-            font-size: 16px;
+        .results-bar h3 {
+            color: #ff6f61;
+            margin-bottom: 15px;
+        }
+        .results-bar p {
+            font-size: 1.1em;
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🍽️ خطة وجبات اليوم</h1>
+    <h1>حاسبة السعرات اليومية</h1>
 
-    <table class="table table-bordered" id="mealsTable">
-        <thead>
-            <tr>
-                <th>الوجبة</th>
-                <th>ماذا تأكل</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <label>الوزن (كجم):</label>
+    <input type="number" id="weight" class="form-control">
 
-    <div class="d-flex justify-content-between">
-        <button class="btn btn-warning" onclick="generateMeals()">🔄 تغيير الوجبات</button>
-        <button class="btn btn-primary" onclick="window.location.href='index.html'">⬅️ الرجوع</button>
-    </div>
+    <label>الطول (سم):</label>
+    <input type="number" id="height" class="form-control">
+
+    <label>العمر (سنة):</label>
+    <input type="number" id="age" class="form-control">
+
+    <label>هدفك:</label>
+    <select id="goal" class="form-select">
+        <option value="cut">تنشيف</option>
+        <option value="bulk">تضخيم</option>
+    </select>
+
+    <button id="calculateBtn" onclick="calculate()">احسب الآن</button>
+
+    <div class="results-bar" id="result" style="display:none;"></div>
 </div>
 
 <script>
-/* =========================
-   أكتر من 100 وجبة
-========================= */
+    function calculate() {
+        let weight = parseFloat(document.getElementById("weight").value);
+        let height = parseFloat(document.getElementById("height").value);
+        let age = parseInt(document.getElementById("age").value);
+        let goal = document.getElementById("goal").value;
 
-const mealsData = {
-    cut: {
-        breakfast: [
-            "بيض + خضار", "شوفان + فواكه", "زبادي يوناني", "توست أسمر + بيض",
-            "جبنة قريش", "بيض مسلوق", "سموثي فواكه", "شوفان + عسل",
-            "زبادي + فراولة", "توست + تونة"
-        ],
-        snack1: [
-            "تفاح", "برتقال", "حفنة مكسرات", "خيار", "جزر",
-            "زبادي", "موز صغير", "كيوي", "كمثرى", "بروتين بار"
-        ],
-        lunch: [
-            "صدر دجاج + سلطة", "سمك مشوي + خضار", "تونة + أرز بني",
-            "لحم مشوي + خضار", "كفتة دايت", "فراخ مشوية",
-            "جمبري", "كبدة مشوية", "برجر دايت", "بيض + بطاطس مسلوقة"
-        ],
-        snack2: [
-            "زبادي لايت", "تفاح", "بيض مسلوق", "خيار",
-            "حفنة فول سوداني", "بروتين شيك", "برتقال", "جزر", "كيوي", "زبادي"
-        ],
-        dinner: [
-            "تونة + سلطة", "بيض + خضار", "جبنة قريش",
-            "سمك", "صدر دجاج صغير", "زبادي", "سلطة فقط",
-            "بيض مسلوق", "خضار سوتيه", "شوربة عدس"
-        ]
-    },
+        if(!weight || !height || !age) {
+            alert("من فضلك املأ كل الحقول!");
+            return;
+        }
 
-    bulk: {
-        breakfast: [
-            "بيض + خبز", "شوفان + موز", "بان كيك", "توست + زبدة فول",
-            "بيض + جبنة", "شوفان + عسل", "سموثي موز",
-            "بيض + بطاطس", "زبادي + جرانولا", "كريب"
-        ],
-        snack1: [
-            "موز + مكسرات", "زبادي", "تمر", "بروتين بار",
-            "فول سوداني", "عصير طبيعي", "تفاح + عسل",
-            "ساندويتش صغير", "لبن كامل", "شوكولاتة داكنة"
-        ],
-        lunch: [
-            "أرز + دجاج", "مكرونة + لحم", "برجر + بطاطس",
-            "كفتة + أرز", "سمك + أرز", "بيتزا منزلية",
-            "شاورما", "كبسة", "مكرونة بشاميل", "محشي"
-        ],
-        snack2: [
-            "توست + جبنة", "موز", "زبادي", "كريب",
-            "بروتين شيك", "تمر", "ساندويتش تونة",
-            "فول سوداني", "عصير", "شوكولاتة"
-        ],
-        dinner: [
-            "دجاج + أرز", "بيض + خبز", "سمك + بطاطس",
-            "مكرونة", "ساندويتش", "جبنة + توست",
-            "شاورما خفيفة", "كفتة", "بيض", "زبادي"
-        ]
+        // معادلة Harris-Benedict للرجال + ثابت نشاط متوسط
+        let bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+        let calories;
+
+        if(goal === "cut") {
+            calories = Math.round(bmr * 1.55 - 500); // تنشيف = أقل 500 سعر حراري
+        } else {
+            calories = Math.round(bmr * 1.55 + 500); // تضخيم = أكثر 500 سعر حراري
+        }
+
+        let protein = Math.round(weight * 1.8);
+        let fat = Math.round(weight * 0.8);
+        let carbs = Math.round((calories - (protein*4 + fat*9)) / 4);
+
+        document.getElementById("result").style.display = "block";
+        // حفظ البيانات في LocalStorage عشان الصفحة التانية تستخدمها
+        localStorage.setItem("calories", calories);
+        localStorage.setItem("protein", protein);
+        localStorage.setItem("fat", fat);
+        localStorage.setItem("carbs", carbs);
+        localStorage.setItem("goal", goal);
+
+        document.getElementById("result").innerHTML =
+            `<h3>خطة الأكل اليومية</h3>
+            <p>السعرات اليومية: <strong>${calories} سعر حراري</strong></p>
+            <p>البروتين: <strong>${protein} جرام</strong></p>
+            <p>الدهون: <strong>${fat} جرام</strong></p>
+            <p>الكربوهيدرات: <strong>${carbs} جرام</strong></p>
+            <button class="btn btn-primary mt-3" onclick="window.location.href='meals.html'">مفروض تأكل إيه؟</button>`;
     }
-};
-
-/* =========================
-   توليد خطة كاملة مرة واحدة
-========================= */
-
-function randomItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function generateMeals() {
-    const goal = localStorage.getItem("goal") || "cut";
-    const tbody = document.querySelector("#mealsTable tbody");
-
-    tbody.innerHTML = `
-        <tr><td>🍳 الإفطار</td><td>${randomItem(mealsData[goal].breakfast)}</td></tr>
-        <tr><td>🍎 سناك</td><td>${randomItem(mealsData[goal].snack1)}</td></tr>
-        <tr><td>🍛 الغداء</td><td>${randomItem(mealsData[goal].lunch)}</td></tr>
-        <tr><td>🍌 سناك</td><td>${randomItem(mealsData[goal].snack2)}</td></tr>
-        <tr><td>🌙 العشاء</td><td>${randomItem(mealsData[goal].dinner)}</td></tr>
-    `;
-}
-
-// أول تحميل
-generateMeals();
 </script>
 
 </body>
