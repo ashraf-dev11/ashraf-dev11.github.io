@@ -2,99 +2,197 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<title>الشات الذكي</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مساعدك الشخصي</title>
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-body { background: #f5f5f5; height: 100vh; display: flex; flex-direction: column; }
-.header { background: #0d6efd; color: #fff; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
-.chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
-.message { max-width: 75%; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; line-height: 1.5; font-size: 16px; }
-.user { align-self: flex-end; background: #0d6efd; color: #fff; border-bottom-right-radius: 0; }
-.bot { align-self: flex-start; background: #e9ecef; color: #000; border-bottom-left-radius: 0; }
-.input-area { display: flex; padding: 10px; background: #fff; border-top: 1px solid #ddd; }
-.input-area input { flex: 1; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; outline: none; }
-.input-area button { margin-left: 10px; padding: 12px 18px; background: #0d6efd; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
-.input-area button:hover { opacity: 0.9; }
-/* زر اشتراك */
-.subscribe-btn { margin: 10px auto; display: block; padding: 12px 20px; font-size: 16px; background: gold; color: black; border: none; border-radius: 10px; cursor: pointer; }
-.subscribe-btn:hover { opacity: 0.9; }
-/* نافذة عائمة */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-.modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 400px; text-align: center; }
-.modal-content button { margin-top: 15px; padding: 10px 15px; border: none; border-radius: 10px; background: #0d6efd; color: white; cursor: pointer; }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+/* زر الرجوع */
+.back-btn {
+    margin: 10px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #6c757d;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* صندوق الشات */
+.chat-box {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+/* الرسائل */
+.chat {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.message {
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    max-width: 75%;
+    word-wrap: break-word;
+}
+
+.user {
+    background: #d1e7ff;
+    margin-left: auto;
+}
+
+.bot {
+    background: #e9e9e9;
+}
+
+/* الإدخال */
+.input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.send-btn {
+    margin-left: 8px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    background: #0d6efd;
+    color: white;
+    cursor: pointer;
+}
+
+/* زر الاشتراك */
+.sub-btn {
+    width: 100%;
+    border: none;
+    padding: 12px;
+    background: #198754;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* نافذة عايمة */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 300px;
+    text-align: center;
+}
+
+.close {
+    margin-top: 15px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 10px;
+    background: #dc3545;
+    color: white;
+    cursor: pointer;
+}
 </style>
 </head>
+
 <body>
 
-<div class="header">🤖 مساعدك الشخصي</div>
+<button class="back-btn" onclick="window.location.href='index.html'">⬅ رجوع</button>
 
-<div class="chat-container" id="chat">
-    <div class="message bot">
-        أهلاً! 👋 اسألني عن السعرات، الأكل، التنشيف، التضخيم، أو أي حاجة.
+<div class="chat-box">
+
+    <div class="chat" id="chat"></div>
+
+    <button class="sub-btn" onclick="openModal()">⭐ اشتراك 4 دولار</button>
+
+    <div class="input-area">
+        <input type="text" id="msg" placeholder="اكتب رسالتك...">
+        <button class="send-btn" onclick="send()">إرسال</button>
     </div>
 </div>
 
-<div class="input-area">
-    <input type="text" id="userInput" placeholder="اكتب سؤالك هنا...">
-    <button onclick="sendMessage()">إرسال</button>
-</div>
-
-<!-- زر اشتراك -->
-<button class="subscribe-btn" onclick="showModal()">اشتراك النسخة المدفوعة 4$</button>
-<p style="text-align:center; margin:5px;">المميزات: شات حقيقي، قريباً إمكانية إرسال صور وتحليلها.</p>
-
-<!-- نافذة عائمة -->
+<!-- نافذة الاشتراك -->
 <div class="modal" id="modal">
     <div class="modal-content">
-        <p>قريباً!</p>
-        <button onclick="closeModal()">حسناً</button>
+        <h3>قريبًا 🚀</h3>
+        <p>• شات ذكي حقيقي  
+        <br>• ردود أدق وأسرع</p>
+        <button class="close" onclick="closeModal()">إغلاق</button>
     </div>
 </div>
 
 <script>
-function sendMessage() {
-    let input = document.getElementById("userInput");
-    let text = input.value.trim();
-    if(text === "") return;
+let chat = document.getElementById("chat");
 
-    addMessage(text, "user");
-    input.value = "";
+/* تحميل الشات المحفوظ */
+window.onload = function () {
+    let saved = localStorage.getItem("chatData");
+    if (saved) {
+        chat.innerHTML = saved;
+        chat.scrollTop = chat.scrollHeight;
+    } else {
+        addMessage("أهلاً 👋 اكتب أي سؤال وأنا أساعدك", "bot");
+    }
+};
 
-    setTimeout(() => {
-        let reply = getBotReply(text);
-        addMessage(reply, "bot");
-    }, 600);
+function saveChat() {
+    localStorage.setItem("chatData", chat.innerHTML);
 }
 
 function addMessage(text, type) {
-    let chat = document.getElementById("chat");
     let div = document.createElement("div");
     div.className = "message " + type;
     div.innerText = text;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+    saveChat();
 }
 
-function getBotReply(text) {
-    text = text.toLowerCase();
+function send() {
+    let input = document.getElementById("msg");
+    let text = input.value.trim();
+    if (!text) return;
 
-    if(text.includes("عامل اي") || text.includes("كيفك")) return "تمام، انت عامل اي؟";
-    if(text.includes("الحمد لله") || text.includes("تمام")) return "تمام الحمد لله 🙌";
-    if(text.includes("سعر") || text.includes("cal")) return "السعرات تختلف حسب وزنك وطولك وهدفك.";
-    if(text.includes("تنشيف")) return "التنشيف محتاج سعرات أقل + بروتين عالي 💪 قلل المقليات والسكريات.";
-    if(text.includes("تضخيم")) return "التضخيم محتاج سعرات أعلى وأكل نضيف 🥩🍚 وزود الكربوهيدرات بالتدريج.";
-    if(text.includes("شتم") || text.includes("يا")) return "من فضلك نكون محترمين 🙏";
-    return "فاهمك، وضحلي أكتر عشان أقدر أساعدك صح 💪";
+    addMessage(text, "user");
+    input.value = "";
+
+    setTimeout(() => {
+        addMessage("تمام 👍 فهمتك، كمل كلامك.", "bot");
+    }, 700);
 }
 
-// إرسال بالإنتر
-document.getElementById("userInput").addEventListener("keypress", function(e) {
-    if(e.key === "Enter") sendMessage();
-});
-
-// فتح وإغلاق النافذة العائمة
-function showModal() {
+/* نافذة الاشتراك */
+function openModal() {
     document.getElementById("modal").style.display = "flex";
 }
 function closeModal() {
