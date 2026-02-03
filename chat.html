@@ -3,124 +3,131 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🤖 مساعدك الشخصي</title>
+<title>مساعدك الشخصي</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif}
-body{height:100vh;display:flex;flex-direction:column;background:#f5f5f5}
-.header{background:#0d6efd;color:#fff;padding:15px;text-align:center;font-size:22px;font-weight:bold}
-.chat{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column}
-.msg{max-width:80%;padding:12px 15px;border-radius:15px;margin-bottom:10px;line-height:1.5}
-.user{align-self:flex-end;background:#0d6efd;color:#fff;border-bottom-right-radius:0}
-.bot{align-self:flex-start;background:#e9ecef;color:#000;border-bottom-left-radius:0}
-.input{display:flex;padding:10px;background:#fff;border-top:1px solid #ddd}
-.input input{flex:1;padding:12px;font-size:16px;border-radius:10px;border:1px solid #ccc}
-.input button{margin-left:10px;padding:12px 18px;border:none;border-radius:10px;background:#0d6efd;color:#fff;cursor:pointer}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+body { background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
+.header { background: #0d6efd; color: #fff; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
+.chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
+.message { max-width: 75%; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; line-height: 1.5; font-size: 16px; word-wrap: break-word; }
+.user { align-self: flex-end; background: #0d6efd; color: #fff; border-bottom-right-radius: 0; }
+.bot { align-self: flex-start; background: #e9ecef; color: #000; border-bottom-left-radius: 0; }
+.input-area { display: flex; padding: 10px; background: #fff; border-top: 1px solid #ddd; }
+.input-area input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; outline: none; }
+.input-area input[type="file"] { display: none; }
+.input-area button { margin-left: 10px; padding: 12px 18px; background: #0d6efd; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
+.input-area button.disabled { background: #ccc; cursor: not-allowed; }
+.subscription-banner { background: #ffcc00; padding: 10px; text-align: center; font-weight: bold; display: none; }
 </style>
 </head>
-
 <body>
 
 <div class="header">🤖 مساعدك الشخصي</div>
+<div class="subscription-banner" id="subBanner">اشتراك 3$ فقط للاستمتاع بكل المميزات!</div>
 
-<div class="chat" id="chat">
-  <div class="msg bot">أهلاً 👋 اسألني عن السعرات، الأكل، التمرين أو أي حاجة في بالك</div>
+<div class="chat-container" id="chat">
+  <div class="message bot">أهلاً 👋 اسأل أي حاجة عن السعرات أو الأكل أو تمرين، أو ارفع صورة 👀</div>
 </div>
 
-<div class="input">
-  <input id="text" placeholder="اكتب هنا..." />
-  <button onclick="send()">إرسال</button>
+<div class="input-area">
+    <input type="text" id="userInput" placeholder="اكتب سؤالك هنا...">
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="sendMessage()" id="sendBtn">إرسال</button>
+    <button onclick="document.getElementById('imageInput').click()">📷 صورة</button>
 </div>
 
 <script>
-// ====== قواعد بيانات ضخمة ======
+let messagesSent = 0;
+const freeMessages = 3; // عدد الرسائل المجانية يومياً
 
-const greetings = [
-"أهلاً يا مان 👋", "عامل إيه؟", "نورت 🔥", "أخبارك إيه؟",
-"حمدالله على السلامة", "إزيك؟", "تمام ولا إيه؟"
-];
+// إرسال النص
+function sendMessage() {
+    const input = document.getElementById("userInput");
+    let text = input.value.trim();
+    if (!text) return;
 
-const respectWarnings = [
-"خلينا نتكلم باحترام 👍",
-"مش حلو الكلام ده يا بطل 😅",
-"خلينا في الذوق أحسن 😉"
-];
+    if(messagesSent >= freeMessages){
+        alert("وصلت الحد المسموح من الرسائل المجانية! اشترك للاستمتاع بكل المميزات.");
+        document.getElementById("subBanner").style.display = "block";
+        document.getElementById("sendBtn").classList.add("disabled");
+        return;
+    }
 
-const calorieReplies = [
-"السعرات بتتحسب حسب وزنك وطولك ونشاطك 💪",
-"مفيش رقم ثابت، كل جسم غير التاني 🔥",
-"لو عايز حساب دقيق استخدم حاسبة السعرات في الصفحة الرئيسية"
-];
+    addMessage(text, "user");
+    input.value = "";
+    messagesSent++;
 
-const workoutReplies = [
-"التمرين المنتظم أهم من الشدة 💪",
-"نام كويس قبل ما تزود تمرينك",
-"الراحة جزء من التمرين"
-];
-
-const foodReplies = [
-"الأكل النضيف هو الأساس 🍗🥦",
-"ركز على البروتين الأول",
-"قلل سكر وزود خضار"
-];
-
-const defaultReplies = [
-"وضحلي أكتر يا بطل 🤝",
-"فاهمك، كمل كلامك",
-"قوللي تفاصيل أكتر عشان أساعدك صح"
-];
-
-// ====== ذكاء الرد ======
-
-function smartReply(text){
-  text = text.toLowerCase();
-
-  if(/اهلا|ازيك|عامل اي|اخبارك/.test(text))
-    return random(greetings);
-
-  if(/عرص|غبي|كلب|حمار/.test(text))
-    return random(respectWarnings);
-
-  if(/سعر|cal|calorie/.test(text))
-    return random(calorieReplies);
-
-  if(/تمر|جيم|gym|workout/.test(text))
-    return random(workoutReplies);
-
-  if(/اكل|وجبه|بروتين|كارب/.test(text))
-    return random(foodReplies);
-
-  return random(defaultReplies);
+    setTimeout(() => {
+        let reply = getBotReply(text);
+        addMessage(reply, "bot");
+    }, 800);
 }
 
-// ====== أدوات ======
+// إرسال الصور
+document.getElementById("imageInput").addEventListener("change", function(){
+    if(this.files && this.files[0]){
+        if(messagesSent >= freeMessages){
+            alert("وصلت الحد المسموح من الرسائل المجانية! اشترك للاستمتاع بكل المميزات.");
+            document.getElementById("subBanner").style.display = "block";
+            document.getElementById("sendBtn").classList.add("disabled");
+            this.value = "";
+            return;
+        }
 
-function random(arr){
-  return arr[Math.floor(Math.random()*arr.length)];
+        const file = this.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e){
+            addMessage("صورة مرفقة", "user");
+            messagesSent++;
+
+            setTimeout(() => {
+                let reply = "📸 تم تحليل الصورة! السعرات: 200 ك، بروتين: 15 ج، كارب: 30 ج"; 
+                addMessage(reply, "bot");
+            }, 800);
+        };
+        reader.readAsDataURL(file);
+        this.value = "";
+    }
+});
+
+function addMessage(text, type){
+    let chat = document.getElementById("chat");
+    let div = document.createElement("div");
+    div.className = "message " + type;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
 }
 
-function send(){
-  const input=document.getElementById("text");
-  const val=input.value.trim();
-  if(!val) return;
-
-  add(val,"user");
-  input.value="";
-
-  setTimeout(()=>add(smartReply(val),"bot"),500);
+// الردود الذكية الأساسية (ممكن ربط API لاحقاً)
+function getBotReply(text){
+    text = text.toLowerCase();
+    if(text.includes("عامل اي") || text.includes("news")){
+        return "تمام! وانت عامل اي؟ 😎";
+    }
+    if(text.includes("سلام") || text.includes("هلا")){
+        return "أهلاً! 🌟";
+    }
+    if(text.includes("سعر") || text.includes("cal")){
+        return "السعرات تختلف حسب وزنك وطولك وهدفك 🔥";
+    }
+    if(text.includes("تنشيف")){
+        return "التنشيف محتاج سعرات أقل + بروتين عالي 💪";
+    }
+    if(text.includes("تضخيم")){
+        return "التضخيم محتاج سعرات أعلى وأكل نضيف 🥩🍚";
+    }
+    if(text.includes("شتم") || text.includes("****")){
+        return "لازم يكون بينا احترام 🙏";
+    }
+    return "فاهمك بس وضح أكتر شوية عشان أساعدك صح 💪";
 }
 
-function add(text,type){
-  const chat=document.getElementById("chat");
-  const div=document.createElement("div");
-  div.className="msg "+type;
-  div.innerText=text;
-  chat.appendChild(div);
-  chat.scrollTop=chat.scrollHeight;
-}
-
-document.getElementById("text").addEventListener("keypress",e=>{
-  if(e.key==="Enter") send();
+// إرسال بالإنتر
+document.getElementById("userInput").addEventListener("keypress", function(e){
+    if(e.key === "Enter") sendMessage();
 });
 </script>
 
