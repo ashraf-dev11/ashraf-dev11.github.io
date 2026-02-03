@@ -4,60 +4,62 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>مساعدك الشخصي</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
-body { background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
+body { background: #f5f5f5; height: 100vh; display: flex; flex-direction: column; }
 .header { background: #0d6efd; color: #fff; padding: 15px; text-align: center; font-size: 20px; font-weight: bold; }
 .chat-container { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; }
-.message { max-width: 75%; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; line-height: 1.5; font-size: 16px; word-wrap: break-word; }
+.message { max-width: 75%; padding: 12px 15px; border-radius: 15px; margin-bottom: 10px; line-height: 1.5; font-size: 16px; }
 .user { align-self: flex-end; background: #0d6efd; color: #fff; border-bottom-right-radius: 0; }
 .bot { align-self: flex-start; background: #e9ecef; color: #000; border-bottom-left-radius: 0; }
 .input-area { display: flex; padding: 10px; background: #fff; border-top: 1px solid #ddd; }
-.input-area input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; outline: none; }
-.input-area input[type="file"] { display: none; }
+.input-area input { flex: 1; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #ccc; outline: none; }
 .input-area button { margin-left: 10px; padding: 12px 18px; background: #0d6efd; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; }
-.input-area button.disabled { background: #ccc; cursor: not-allowed; }
-.subscription-banner { background: #ffcc00; padding: 10px; text-align: center; font-weight: bold; display: none; }
+.input-area button:hover { opacity: 0.9; }
+/* زر اشتراك */
+.subscribe-btn { margin: 10px auto; display: block; padding: 12px 20px; font-size: 16px; background: gold; color: black; border: none; border-radius: 10px; cursor: pointer; }
+.subscribe-btn:hover { opacity: 0.9; }
+/* نافذة عائمة */
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 400px; text-align: center; }
+.modal-content button { margin-top: 15px; padding: 10px 15px; border: none; border-radius: 10px; background: #0d6efd; color: white; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <div class="header">🤖 مساعدك الشخصي</div>
-<div class="subscription-banner" id="subBanner">اشتراك 3$ فقط للاستمتاع بكل المميزات!</div>
 
 <div class="chat-container" id="chat">
-  <div class="message bot">أهلاً 👋 اسأل أي حاجة عن السعرات أو الأكل أو تمرين، أو ارفع صورة 👀</div>
+    <div class="message bot">
+        أهلاً! 👋 اسألني عن السعرات، الأكل، التنشيف، التضخيم، أو أي حاجة.
+    </div>
 </div>
 
 <div class="input-area">
     <input type="text" id="userInput" placeholder="اكتب سؤالك هنا...">
-    <input type="file" id="imageInput" accept="image/*">
-    <button onclick="sendMessage()" id="sendBtn">إرسال</button>
-    <button onclick="document.getElementById('imageInput').click()">📷 صورة</button>
+    <button onclick="sendMessage()">إرسال</button>
+</div>
+
+<!-- زر اشتراك -->
+<button class="subscribe-btn" onclick="showModal()">اشتراك النسخة المدفوعة 4$</button>
+<p style="text-align:center; margin:5px;">المميزات: شات حقيقي، إمكانية إرسال صور وتحليلها قريباً.</p>
+
+<!-- نافذة عائمة -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <p>قريباً!</p>
+        <button onclick="closeModal()">حسناً</button>
+    </div>
 </div>
 
 <script>
-let messagesSent = 0;
-const freeMessages = 3; // عدد الرسائل المجانية يومياً
-
-// إرسال النص
 function sendMessage() {
-    const input = document.getElementById("userInput");
+    let input = document.getElementById("userInput");
     let text = input.value.trim();
-    if (!text) return;
-
-    if(messagesSent >= freeMessages){
-        alert("وصلت الحد المسموح من الرسائل المجانية! اشترك للاستمتاع بكل المميزات.");
-        document.getElementById("subBanner").style.display = "block";
-        document.getElementById("sendBtn").classList.add("disabled");
-        return;
-    }
+    if(text === "") return;
 
     addMessage(text, "user");
     input.value = "";
-    messagesSent++;
 
     setTimeout(() => {
         let reply = getBotReply(text);
@@ -65,34 +67,7 @@ function sendMessage() {
     }, 800);
 }
 
-// إرسال الصور
-document.getElementById("imageInput").addEventListener("change", function(){
-    if(this.files && this.files[0]){
-        if(messagesSent >= freeMessages){
-            alert("وصلت الحد المسموح من الرسائل المجانية! اشترك للاستمتاع بكل المميزات.");
-            document.getElementById("subBanner").style.display = "block";
-            document.getElementById("sendBtn").classList.add("disabled");
-            this.value = "";
-            return;
-        }
-
-        const file = this.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e){
-            addMessage("صورة مرفقة", "user");
-            messagesSent++;
-
-            setTimeout(() => {
-                let reply = "📸 تم تحليل الصورة! السعرات: 200 ك، بروتين: 15 ج، كارب: 30 ج"; 
-                addMessage(reply, "bot");
-            }, 800);
-        };
-        reader.readAsDataURL(file);
-        this.value = "";
-    }
-});
-
-function addMessage(text, type){
+function addMessage(text, type) {
     let chat = document.getElementById("chat");
     let div = document.createElement("div");
     div.className = "message " + type;
@@ -101,34 +76,31 @@ function addMessage(text, type){
     chat.scrollTop = chat.scrollHeight;
 }
 
-// الردود الذكية الأساسية (ممكن ربط API لاحقاً)
-function getBotReply(text){
+function getBotReply(text) {
     text = text.toLowerCase();
-    if(text.includes("عامل اي") || text.includes("news")){
-        return "تمام! وانت عامل اي؟ 😎";
-    }
-    if(text.includes("سلام") || text.includes("هلا")){
-        return "أهلاً! 🌟";
-    }
-    if(text.includes("سعر") || text.includes("cal")){
-        return "السعرات تختلف حسب وزنك وطولك وهدفك 🔥";
-    }
-    if(text.includes("تنشيف")){
-        return "التنشيف محتاج سعرات أقل + بروتين عالي 💪";
-    }
-    if(text.includes("تضخيم")){
-        return "التضخيم محتاج سعرات أعلى وأكل نضيف 🥩🍚";
-    }
-    if(text.includes("شتم") || text.includes("****")){
-        return "لازم يكون بينا احترام 🙏";
-    }
-    return "فاهمك بس وضح أكتر شوية عشان أساعدك صح 💪";
+
+    // أمثلة على الردود الذكية
+    if(text.includes("عامل اي") || text.includes("كيفك")) return "تمام، انت عامل اي؟";
+    if(text.includes("الحمد لله") || text.includes("تمام")) return "تمام الحمد لله 🙌";
+    if(text.includes("سعر") || text.includes("cal")) return "السعرات تختلف حسب وزنك وطولك وهدفك. استخدم صفحة الحساب للحصول على دقة أكبر.";
+    if(text.includes("تنشيف")) return "التنشيف محتاج سعرات أقل + بروتين عالي 💪 قلل المقليات والسكريات.";
+    if(text.includes("تضخيم")) return "التضخيم محتاج سعرات أعلى وأكل نضيف 🥩🍚 وزود الكربوهيدرات بالتدريج.";
+    if(text.includes("شتم") || text.includes("يا")) return "من فضلك نكون محترمين 🙏";
+    return "فاهمك، وضحلي أكتر عشان أقدر أساعدك صح 💪";
 }
 
 // إرسال بالإنتر
-document.getElementById("userInput").addEventListener("keypress", function(e){
+document.getElementById("userInput").addEventListener("keypress", function(e) {
     if(e.key === "Enter") sendMessage();
 });
+
+// فتح وإغلاق النافذة العائمة
+function showModal() {
+    document.getElementById("modal").style.display = "flex";
+}
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
 </script>
 
 </body>
