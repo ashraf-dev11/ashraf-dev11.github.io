@@ -3,36 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخطة الشهرية الذكية</title>
+<title>الخطة الشهرية</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 body{
-background: linear-gradient(to right,#eef2f3,#ffffff);
-font-family: Tahoma;
+background:linear-gradient(to right,#dff6ff,#b8e4f0);
+font-family:Arial;
 }
 
 .container{
-max-width:1200px;
-background:white;
-padding:30px;
-border-radius:20px;
-margin-top:30px;
-box-shadow:0 10px 25px rgba(0,0,0,0.1);
+margin-top:40px;
 }
 
 .plan-card{
 cursor:pointer;
-transition:0.3s;
+transition:.3s;
 }
+
 .plan-card:hover{
 transform:scale(1.05);
 }
 
-img.food{
-width:60px;
+.day-box{
+background:white;
+padding:15px;
+border-radius:15px;
+box-shadow:0 4px 10px rgba(0,0,0,.1);
+margin-bottom:20px;
+}
+
+.food-img{
+width:70px;
+height:70px;
 border-radius:10px;
+object-fit:cover;
 }
 </style>
 </head>
@@ -41,208 +47,191 @@ border-radius:10px;
 
 <div class="container">
 
-<h2 class="text-center mb-3">📅 الخطة الشهرية الذكية</h2>
+<h2 class="text-center mb-4">📅 اختر خطتك الشهرية</h2>
 
-<div class="mb-3">
-<label>ادخل وزنك (كجم)</label>
-<input type="number" id="weight" class="form-control">
+<div class="row text-center" id="plans">
+
+<div class="col-md-4">
+<div class="card plan-card p-3" onclick="startPlan('bulk')">
+💪 تضخيم
+</div>
 </div>
 
-<h4 class="text-center">اختر هدفك</h4>
-<div class="row" id="plansContainer"></div>
+<div class="col-md-4">
+<div class="card plan-card p-3" onclick="startPlan('cut')">
+🔥 تنشيف
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card plan-card p-3" onclick="startPlan('veganBulk')">
+🌱 تضخيم نباتي
+</div>
+</div>
+
+<div class="col-md-4 mt-3">
+<div class="card plan-card p-3" onclick="startPlan('veganCut')">
+🥗 تنشيف نباتي
+</div>
+</div>
+
+<div class="col-md-4 mt-3">
+<div class="card plan-card p-3" onclick="startPlan('ramadanBulk')">
+🌙 تضخيم رمضان
+</div>
+</div>
+
+<div class="col-md-4 mt-3">
+<div class="card plan-card p-3" onclick="startPlan('ramadanCut')">
+⭐ تنشيف رمضان
+</div>
+</div>
+
+</div>
 
 <hr>
 
-<h4 class="text-center">🔥 السعرات اليومية: <span id="caloriesBox">0</span></h4>
-
-<table class="table table-bordered mt-3">
-<thead>
-<tr>
-<th>اليوم</th>
-<th>الإفطار</th>
-<th>سناك</th>
-<th>الغداء</th>
-<th>العشاء</th>
-</tr>
-</thead>
-<tbody id="planTable"></tbody>
-</table>
+<div id="result"></div>
 
 </div>
 
 <script>
 
-/* ========= بيانات الخطط ========= */
+let weight = prompt("ادخل وزنك بالكيلو");
+weight = Number(weight) || 70;
 
-const plans = {
-cut:{title:"🔥 تنشيف", cal:30},
-bulk:{title:"💪 تضخيم", cal:40},
-vegCut:{title:"🥦 تنشيف نباتي", cal:28},
-vegBulk:{title:"🌱 تضخيم نباتي", cal:38},
-ramadanBulk:{title:"🌙 تضخيم رمضان", cal:39},
-ramadanCut:{title:"🌙🔥 تنشيف رمضان", cal:29}
-};
+/* حساب السعرات */
+function calories(goal){
 
+if(goal.includes("bulk"))
+return weight * 40;
 
-/* ========= بيانات الأكل + الصور ========= */
+return weight * 28;
+}
 
-const meals = {
+/* بيانات الأكل */
+const foods = {
 
-breakfast:[
-{name:"بيض + عيش", img:"https://i.imgur.com/HYxJ0sF.jpg"},
-{name:"فول + عيش", img:"https://i.imgur.com/4YVYw5L.jpg"},
-{name:"جبنة قريش", img:"https://i.imgur.com/eh7YQ7T.jpg"},
-{name:"عدس", img:"https://i.imgur.com/pYtGJQH.jpg"}
+bulk:[
+{name:"بيض + عيش بلدي",img:"https://i.imgur.com/6XK5R9k.jpg"},
+{name:"فول بالزيت + عيش",img:"https://i.imgur.com/cPz4K9R.jpg"},
+{name:"رز + فراخ",img:"https://i.imgur.com/4QfKuz1.jpg"},
+{name:"بطاطس + بيض",img:"https://i.imgur.com/Y1p9YxX.jpg"},
+{name:"مكرونة + لحمة",img:"https://i.imgur.com/5yF6KkI.jpg"},
+{name:"عدس + عيش",img:"https://i.imgur.com/HZx4C9b.jpg"}
 ],
 
-snack:[
-{name:"تفاح", img:"https://i.imgur.com/Nz5sK3V.jpg"},
-{name:"موز", img:"https://i.imgur.com/4V0v6hN.jpg"},
-{name:"تمر", img:"https://i.imgur.com/jmX5v5R.jpg"},
-{name:"مكسرات", img:"https://i.imgur.com/5KqJxvZ.jpg"}
+cut:[
+{name:"بيض مسلوق",img:"https://i.imgur.com/TkYzP6G.jpg"},
+{name:"تونة + سلطة",img:"https://i.imgur.com/rz6F7XU.jpg"},
+{name:"فراخ مشوية",img:"https://i.imgur.com/4QfKuz1.jpg"},
+{name:"زبادي",img:"https://i.imgur.com/BxFZ8Qh.jpg"},
+{name:"جبنة قريش",img:"https://i.imgur.com/6XK5R9k.jpg"}
 ],
 
-lunch:[
-{name:"رز + فراخ", img:"https://i.imgur.com/9g0t3QK.jpg"},
-{name:"مكرونة + لحمة", img:"https://i.imgur.com/Qg5G5Xy.jpg"},
-{name:"رز + كفتة", img:"https://i.imgur.com/f5iG7nl.jpg"},
-{name:"تونة + سلطة", img:"https://i.imgur.com/w0K9r0S.jpg"}
+veganBulk:[
+{name:"فول + طحينة",img:"https://i.imgur.com/cPz4K9R.jpg"},
+{name:"عدس",img:"https://i.imgur.com/HZx4C9b.jpg"},
+{name:"رز + فاصوليا",img:"https://i.imgur.com/4QfKuz1.jpg"},
+{name:"بطاطس",img:"https://i.imgur.com/Y1p9YxX.jpg"}
 ],
 
-dinner:[
-{name:"بيض مسلوق", img:"https://i.imgur.com/9E6yRkG.jpg"},
-{name:"زبادي", img:"https://i.imgur.com/1mT7n8F.jpg"},
-{name:"فول", img:"https://i.imgur.com/YrO2Vfa.jpg"},
-{name:"سلطة", img:"https://i.imgur.com/3f3VYvT.jpg"}
+veganCut:[
+{name:"سلطة كبيرة",img:"https://i.imgur.com/rz6F7XU.jpg"},
+{name:"عدس",img:"https://i.imgur.com/HZx4C9b.jpg"},
+{name:"خضار سوتيه",img:"https://i.imgur.com/4QfKuz1.jpg"}
+],
+
+ramadanBulk:[
+{name:"تمر + لبن",img:"https://i.imgur.com/6XK5R9k.jpg"},
+{name:"رز + فراخ",img:"https://i.imgur.com/4QfKuz1.jpg"},
+{name:"مكرونة",img:"https://i.imgur.com/5yF6KkI.jpg"}
+],
+
+ramadanCut:[
+{name:"شوربة عدس",img:"https://i.imgur.com/HZx4C9b.jpg"},
+{name:"فراخ مشوية",img:"https://i.imgur.com/4QfKuz1.jpg"},
+{name:"سلطة",img:"https://i.imgur.com/rz6F7XU.jpg"}
 ]
 
 };
 
 
-/* ========= عرض الخطط ========= */
-
-const container = document.getElementById("plansContainer");
-
-Object.keys(plans).forEach(key=>{
-container.innerHTML+=`
-<div class="col-md-4 mb-3">
-<div class="card plan-card p-3" onclick="generateMonth('${key}')">
-<h5>${plans[key].title}</h5>
-</div>
-</div>
-`;
-});
-
-
-/* ========= اختيار وجبة بدون تكرار ========= */
-
+/* منع تكرار داخل اليوم فقط */
 function pickUnique(arr, used){
-let item;
-do{
-item = arr[Math.floor(Math.random()*arr.length)];
-}while(used.has(item.name));
-used.add(item.name);
+
+let available = arr.filter(f => !used.includes(f.name));
+
+if(available.length === 0){
+used.length = 0;
+available = arr;
+}
+
+let item = available[Math.floor(Math.random()*available.length)];
+used.push(item.name);
+
 return item;
 }
 
 
-/* ========= حساب السعرات ========= */
+/* توليد خطة شهر */
+function startPlan(type){
 
-function calculateCalories(type){
+let html = `
+<h3 class="text-center">🔥 السعرات اليومية: ${calories(type)}</h3>
+`;
 
-let weight = document.getElementById("weight").value;
-if(!weight) return 0;
+let savedPlan = [];
 
-let calories = weight * plans[type].cal;
+for(let day=1; day<=30; day++){
 
-document.getElementById("caloriesBox").innerText = calories;
-return calories;
-}
+let usedToday = [];
 
+let meal1 = pickUnique(foods[type], usedToday);
+let meal2 = pickUnique(foods[type], usedToday);
+let meal3 = pickUnique(foods[type], usedToday);
 
-/* ========= توليد الجدول ========= */
+savedPlan.push({meal1,meal2,meal3});
 
-function generateMonth(type){
+html += `
+<div class="day-box">
 
-calculateCalories(type);
+<h5>اليوم ${day}</h5>
 
-const table = document.getElementById("planTable");
-table.innerHTML="";
+<div class="d-flex gap-3">
+<img class="food-img" src="${meal1.img}">
+<span>${meal1.name}</span>
+</div>
 
-const used = new Set();
-let storedPlan = [];
+<div class="d-flex gap-3">
+<img class="food-img" src="${meal2.img}">
+<span>${meal2.name}</span>
+</div>
 
-for(let i=1;i<=30;i++){
+<div class="d-flex gap-3">
+<img class="food-img" src="${meal3.img}">
+<span>${meal3.name}</span>
+</div>
 
-let b = pickUnique(meals.breakfast, used);
-let s = pickUnique(meals.snack, used);
-let l = pickUnique(meals.lunch, used);
-let d = pickUnique(meals.dinner, used);
-
-storedPlan.push({day:i,b,s,l,d});
-
-table.innerHTML+=`
-<tr>
-<td>${i}</td>
-
-<td>
-<img class="food" src="${b.img}">
-<br>${b.name}
-</td>
-
-<td>
-<img class="food" src="${s.img}">
-<br>${s.name}
-</td>
-
-<td>
-<img class="food" src="${l.img}">
-<br>${l.name}
-</td>
-
-<td>
-<img class="food" src="${d.img}">
-<br>${d.name}
-</td>
-
-</tr>
+</div>
 `;
 }
 
 /* حفظ الخطة */
-localStorage.setItem("savedPlan", JSON.stringify(storedPlan));
-localStorage.setItem("savedType", type);
+localStorage.setItem("monthlyPlan", JSON.stringify(savedPlan));
 
+document.getElementById("result").innerHTML = html;
 }
 
 
-/* ========= استرجاع الخطة ========= */
+/* تحميل الخطة لو موجودة */
+window.onload = () => {
 
-window.onload = ()=>{
+let saved = localStorage.getItem("monthlyPlan");
 
-let saved = localStorage.getItem("savedPlan");
-let type = localStorage.getItem("savedType");
-
-if(saved && type){
-
-calculateCalories(type);
-
-const table = document.getElementById("planTable");
-let plan = JSON.parse(saved);
-
-plan.forEach(row=>{
-
-table.innerHTML+=`
-<tr>
-<td>${row.day}</td>
-<td>${row.b.name}</td>
-<td>${row.s.name}</td>
-<td>${row.l.name}</td>
-<td>${row.d.name}</td>
-</tr>
-`;
-});
-
+if(saved){
+document.getElementById("result").innerHTML =
+"<h4 class='text-center'>تم تحميل خطتك السابقة ✔</h4>";
 }
 
 };
