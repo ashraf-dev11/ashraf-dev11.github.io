@@ -54,15 +54,18 @@ table td{
 
 <div class="d-flex justify-content-between">
 <button class="btn btn-warning" onclick="generateMeals()">🔄 تغيير الخطة</button>
-<button class="btn btn-primary" onclick="window.location.href='index.html'">⬅️ رجوع</button>
+<div>
+<button class="btn btn-primary me-2" onclick="window.location.href='index.html'">⬅️ رجوع</button>
+<button class="btn btn-success" onclick="window.location.href='monthly-plan.html'">📅 ابدأ خطتك الشهرية</button>
 </div>
+</div>
+
 </div>
 
 <script>
 /* ======================
    بيانات الوجبات
 ====================== */
-
 const mealsData = {
 cut:{
 breakfast:[
@@ -125,7 +128,6 @@ dinner:[
 /* ======================
    منع التكرار
 ====================== */
-
 function pickUnique(arr, used){
 let item;
 do{
@@ -138,7 +140,6 @@ return item;
 /* ======================
    توليد الخطة
 ====================== */
-
 function generateMeals(){
 let goal = localStorage.getItem("goal");
 if(!goal || !mealsData[goal]) goal = "cut";
