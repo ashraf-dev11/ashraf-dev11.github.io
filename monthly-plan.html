@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخطة الشهرية</title>
+<title>الخطة الشهرية الذكية</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -14,11 +14,11 @@ font-family: Tahoma;
 }
 
 .container{
-max-width:1100px;
+max-width:1200px;
 background:white;
 padding:30px;
 border-radius:20px;
-margin-top:40px;
+margin-top:30px;
 box-shadow:0 10px 25px rgba(0,0,0,0.1);
 }
 
@@ -26,15 +26,14 @@ box-shadow:0 10px 25px rgba(0,0,0,0.1);
 cursor:pointer;
 transition:0.3s;
 }
-
 .plan-card:hover{
 transform:scale(1.05);
 }
 
-table td, table th{
-text-align:center;
+img.food{
+width:60px;
+border-radius:10px;
 }
-
 </style>
 </head>
 
@@ -42,13 +41,19 @@ text-align:center;
 
 <div class="container">
 
-<h1 class="text-center mb-4">📅 اختر خطتك</h1>
+<h2 class="text-center mb-3">📅 الخطة الشهرية الذكية</h2>
 
+<div class="mb-3">
+<label>ادخل وزنك (كجم)</label>
+<input type="number" id="weight" class="form-control">
+</div>
+
+<h4 class="text-center">اختر هدفك</h4>
 <div class="row" id="plansContainer"></div>
 
 <hr>
 
-<h3 class="text-center">📊 جدول الشهر</h3>
+<h4 class="text-center">🔥 السعرات اليومية: <span id="caloriesBox">0</span></h4>
 
 <table class="table table-bordered mt-3">
 <thead>
@@ -58,7 +63,6 @@ text-align:center;
 <th>سناك</th>
 <th>الغداء</th>
 <th>العشاء</th>
-<th>مشروب</th>
 </tr>
 </thead>
 <tbody id="planTable"></tbody>
@@ -68,132 +72,180 @@ text-align:center;
 
 <script>
 
-/* ================= الخطط ================= */
+/* ========= بيانات الخطط ========= */
 
-const plans = [
-"cut",
-"bulk",
-"vegCut",
-"vegBulk",
-"ramadanBulk",
-"ramadanCut"
-];
+const plans = {
+cut:{title:"🔥 تنشيف", cal:30},
+bulk:{title:"💪 تضخيم", cal:40},
+vegCut:{title:"🥦 تنشيف نباتي", cal:28},
+vegBulk:{title:"🌱 تضخيم نباتي", cal:38},
+ramadanBulk:{title:"🌙 تضخيم رمضان", cal:39},
+ramadanCut:{title:"🌙🔥 تنشيف رمضان", cal:29}
+};
 
-/* ================= البيانات ================= */
+
+/* ========= بيانات الأكل + الصور ========= */
 
 const meals = {
 
-cut:{
-title:"🔥 تنشيف",
-breakfast:["بيض مسلوق + خيار","جبنة قريش + طماطم","فول بدون زيت","زبادي لايت"],
-snack:["تفاح","برتقال","خيار","جزر"],
-lunch:["فراخ مشوية + سلطة","تونة + سلطة","لحمة مسلوقة + خضار","بيض + سلطة"],
-dinner:["زبادي","جبنة قريش","بيض مسلوق","سلطة تونة"],
-drink:["شاي أخضر","قهوة سادة","مياه بالليمون"]
-},
+breakfast:[
+{name:"بيض + عيش", img:"https://i.imgur.com/HYxJ0sF.jpg"},
+{name:"فول + عيش", img:"https://i.imgur.com/4YVYw5L.jpg"},
+{name:"جبنة قريش", img:"https://i.imgur.com/eh7YQ7T.jpg"},
+{name:"عدس", img:"https://i.imgur.com/pYtGJQH.jpg"}
+],
 
-bulk:{
-title:"💪 تضخيم",
-breakfast:["بيض + عيش بلدي","فول بزيت زيتون + عيش","جبنة + عيش + عسل"],
-snack:["موز + فول سوداني","تمر + لبن","ساندويتش جبنة"],
-lunch:["رز + فراخ","مكرونة + لحمة","رز + كفتة"],
-dinner:["بيض + بطاطس","جبنة + عيش","فول + طحينة"],
-drink:[
-"سموثي موز + لبن + شوفان",
-"لبن بالعسل",
-"سموثي تمر + لبن"
+snack:[
+{name:"تفاح", img:"https://i.imgur.com/Nz5sK3V.jpg"},
+{name:"موز", img:"https://i.imgur.com/4V0v6hN.jpg"},
+{name:"تمر", img:"https://i.imgur.com/jmX5v5R.jpg"},
+{name:"مكسرات", img:"https://i.imgur.com/5KqJxvZ.jpg"}
+],
+
+lunch:[
+{name:"رز + فراخ", img:"https://i.imgur.com/9g0t3QK.jpg"},
+{name:"مكرونة + لحمة", img:"https://i.imgur.com/Qg5G5Xy.jpg"},
+{name:"رز + كفتة", img:"https://i.imgur.com/f5iG7nl.jpg"},
+{name:"تونة + سلطة", img:"https://i.imgur.com/w0K9r0S.jpg"}
+],
+
+dinner:[
+{name:"بيض مسلوق", img:"https://i.imgur.com/9E6yRkG.jpg"},
+{name:"زبادي", img:"https://i.imgur.com/1mT7n8F.jpg"},
+{name:"فول", img:"https://i.imgur.com/YrO2Vfa.jpg"},
+{name:"سلطة", img:"https://i.imgur.com/3f3VYvT.jpg"}
 ]
-},
-
-vegCut:{
-title:"🥦 تنشيف نباتي",
-breakfast:["فول بدون زيت","عدس","حمص مسلوق"],
-snack:["تفاح","خيار","جزر"],
-lunch:["رز + عدس","خضار سوتيه","فاصوليا + رز"],
-dinner:["حمص","عدس","سلطة فول"],
-drink:["شاي أخضر","مياه بالليمون"]
-},
-
-vegBulk:{
-title:"🌱 تضخيم نباتي",
-breakfast:["فول بزيت زيتون + عيش","حمص + طحينة","عدس + عيش"],
-snack:["تمر + فول سوداني","موز + مكسرات"],
-lunch:["رز + فاصوليا","مكرونة + عدس","رز + حمص"],
-dinner:["فول + طحينة","عدس + بطاطس"],
-drink:[
-"سموثي موز + شوفان + لبن نباتي",
-"عصير تمر",
-"سموثي فول سوداني"
-]
-},
-
-ramadanBulk:{
-title:"🌙 تضخيم رمضان",
-breakfast:["تمر + لبن","شوربة عدس","سموثي موز"],
-snack:["مكسرات","تمر"],
-lunch:["رز + فراخ","مكرونة بشاميل","رز + لحمة"],
-dinner:["بيض + جبنة","فول + طحينة"],
-drink:[
-"سموثي تمر + لبن + شوفان",
-"قمر الدين",
-"سموثي موز + عسل"
-]
-},
-
-ramadanCut:{
-title:"🌙🔥 تنشيف رمضان",
-breakfast:["تمر + مياه","شوربة خضار"],
-snack:["تفاح","خيار"],
-lunch:["فراخ مشوية + سلطة","تونة + سلطة"],
-dinner:["زبادي","بيض مسلوق"],
-drink:["مياه بالليمون","شاي أخضر"]
-}
 
 };
 
 
-/* ================= عرض المربعات ================= */
+/* ========= عرض الخطط ========= */
 
 const container = document.getElementById("plansContainer");
 
-plans.forEach(key=>{
-container.innerHTML += `
+Object.keys(plans).forEach(key=>{
+container.innerHTML+=`
 <div class="col-md-4 mb-3">
 <div class="card plan-card p-3" onclick="generateMonth('${key}')">
-<h5>${meals[key].title}</h5>
-<p>اضغط لعرض الجدول</p>
+<h5>${plans[key].title}</h5>
 </div>
 </div>
 `;
 });
 
 
-/* ================= توليد الشهر ================= */
+/* ========= اختيار وجبة بدون تكرار ========= */
 
-function random(arr){
-return arr[Math.floor(Math.random()*arr.length)];
+function pickUnique(arr, used){
+let item;
+do{
+item = arr[Math.floor(Math.random()*arr.length)];
+}while(used.has(item.name));
+used.add(item.name);
+return item;
 }
+
+
+/* ========= حساب السعرات ========= */
+
+function calculateCalories(type){
+
+let weight = document.getElementById("weight").value;
+if(!weight) return 0;
+
+let calories = weight * plans[type].cal;
+
+document.getElementById("caloriesBox").innerText = calories;
+return calories;
+}
+
+
+/* ========= توليد الجدول ========= */
 
 function generateMonth(type){
 
+calculateCalories(type);
+
 const table = document.getElementById("planTable");
-table.innerHTML = "";
+table.innerHTML="";
+
+const used = new Set();
+let storedPlan = [];
 
 for(let i=1;i<=30;i++){
 
-table.innerHTML += `
+let b = pickUnique(meals.breakfast, used);
+let s = pickUnique(meals.snack, used);
+let l = pickUnique(meals.lunch, used);
+let d = pickUnique(meals.dinner, used);
+
+storedPlan.push({day:i,b,s,l,d});
+
+table.innerHTML+=`
 <tr>
 <td>${i}</td>
-<td>${random(meals[type].breakfast)}</td>
-<td>${random(meals[type].snack)}</td>
-<td>${random(meals[type].lunch)}</td>
-<td>${random(meals[type].dinner)}</td>
-<td>${random(meals[type].drink)}</td>
+
+<td>
+<img class="food" src="${b.img}">
+<br>${b.name}
+</td>
+
+<td>
+<img class="food" src="${s.img}">
+<br>${s.name}
+</td>
+
+<td>
+<img class="food" src="${l.img}">
+<br>${l.name}
+</td>
+
+<td>
+<img class="food" src="${d.img}">
+<br>${d.name}
+</td>
+
 </tr>
 `;
 }
 
+/* حفظ الخطة */
+localStorage.setItem("savedPlan", JSON.stringify(storedPlan));
+localStorage.setItem("savedType", type);
+
 }
+
+
+/* ========= استرجاع الخطة ========= */
+
+window.onload = ()=>{
+
+let saved = localStorage.getItem("savedPlan");
+let type = localStorage.getItem("savedType");
+
+if(saved && type){
+
+calculateCalories(type);
+
+const table = document.getElementById("planTable");
+let plan = JSON.parse(saved);
+
+plan.forEach(row=>{
+
+table.innerHTML+=`
+<tr>
+<td>${row.day}</td>
+<td>${row.b.name}</td>
+<td>${row.s.name}</td>
+<td>${row.l.name}</td>
+<td>${row.d.name}</td>
+</tr>
+`;
+});
+
+}
+
+};
 
 </script>
 
