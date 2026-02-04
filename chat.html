@@ -2,11 +2,10 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>الشات الذكي</title>
+<title>الشات الذكي - تضخيم وتنشيف</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
 body{
 margin:0;
 font-family:Arial;
@@ -15,8 +14,6 @@ height:100vh;
 display:flex;
 flex-direction:column;
 }
-
-/* الهيدر */
 .header{
 background:#075e54;
 color:white;
@@ -25,7 +22,6 @@ display:flex;
 align-items:center;
 gap:10px;
 }
-
 .header button{
 background:white;
 border:none;
@@ -33,8 +29,6 @@ padding:6px 12px;
 border-radius:8px;
 cursor:pointer;
 }
-
-/* الشات */
 .chat{
 flex:1;
 overflow-y:auto;
@@ -42,8 +36,6 @@ padding:20px;
 display:flex;
 flex-direction:column;
 }
-
-/* الرسائل */
 .msg{
 padding:10px 14px;
 border-radius:15px;
@@ -52,29 +44,23 @@ max-width:70%;
 word-wrap:break-word;
 animation:fade .3s;
 }
-
 @keyframes fade{
 from{opacity:0; transform:translateY(10px);}
 to{opacity:1;}
 }
-
 .user{
 background:#dcf8c6;
 align-self:flex-end;
 }
-
 .bot{
 background:white;
 align-self:flex-start;
 }
-
-/* الإدخال */
 .input-area{
 display:flex;
 padding:10px;
 background:white;
 }
-
 .input-area input{
 flex:1;
 padding:12px;
@@ -82,7 +68,6 @@ border-radius:10px;
 border:1px solid #ccc;
 outline:none;
 }
-
 .input-area button{
 margin-left:8px;
 padding:12px 18px;
@@ -92,12 +77,9 @@ background:#075e54;
 color:white;
 cursor:pointer;
 }
-
-/* أزرار إضافية */
 .bottom-bar{
 display:flex;
 }
-
 .sub-btn{
 flex:1;
 border:none;
@@ -106,7 +88,6 @@ color:white;
 padding:12px;
 cursor:pointer;
 }
-
 .clear-btn{
 flex:1;
 border:none;
@@ -115,8 +96,6 @@ color:white;
 padding:12px;
 cursor:pointer;
 }
-
-/* نافذة الاشتراك */
 .modal{
 display:none;
 position:fixed;
@@ -125,7 +104,6 @@ background:rgba(0,0,0,.5);
 justify-content:center;
 align-items:center;
 }
-
 .modal-box{
 background:white;
 padding:25px;
@@ -133,7 +111,6 @@ border-radius:15px;
 text-align:center;
 width:300px;
 }
-
 </style>
 </head>
 
@@ -156,14 +133,14 @@ width:300px;
 <button onclick="send()">إرسال</button>
 </div>
 
-<!-- نافذة الاشتراك -->
 <div class="modal" id="modal">
 <div class="modal-box">
 <h3>قريبًا 🚀</h3>
 <p>
 ✔ شات حقيقي  
-✔ إرسال صور وتحليلها  
-✔ ردود أذكى  
+✔ ردود ذكية  
+✔ نصائح تضخيم وتنشيف  
+✔ تحليل رسائلك بشكل ذكي  
 </p>
 <button onclick="closeModal()">إغلاق</button>
 </div>
@@ -172,29 +149,20 @@ width:300px;
 <audio id="msgSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
 
 <script>
-
 let chat=document.getElementById("chat");
 
-/* تحميل الشات */
 window.onload=()=>{
 let saved=localStorage.getItem("chatData");
-
 if(saved){
 chat.innerHTML=saved;
 scrollBottom();
 }else{
-addBot("أهلاً 👋 اتكلم وأنا هساعدك");
+addBot("أهلاً 👋 اتكلم وأنا هساعدك في تضخيمك وتنشيفك");
 }
 };
 
-function saveChat(){
-localStorage.setItem("chatData",chat.innerHTML);
-}
-
-function scrollBottom(){
-chat.scrollTop=chat.scrollHeight;
-}
-
+function saveChat(){localStorage.setItem("chatData",chat.innerHTML);}
+function scrollBottom(){chat.scrollTop=chat.scrollHeight;}
 function addUser(text){
 let div=document.createElement("div");
 div.className="msg user";
@@ -203,7 +171,6 @@ chat.appendChild(div);
 saveChat();
 scrollBottom();
 }
-
 function addBot(text){
 let div=document.createElement("div");
 div.className="msg bot";
@@ -213,8 +180,6 @@ document.getElementById("msgSound").play();
 saveChat();
 scrollBottom();
 }
-
-/* مؤشر البوت يكتب */
 function typing(){
 let div=document.createElement("div");
 div.className="msg bot";
@@ -223,59 +188,29 @@ div.innerText="البوت يكتب...";
 chat.appendChild(div);
 scrollBottom();
 }
-
 function removeTyping(){
 let t=document.getElementById("typing");
 if(t) t.remove();
 }
-
-/* إرسال */
 function send(){
-
 let input=document.getElementById("input");
 let text=input.value.trim();
-
 if(!text) return;
-
 addUser(text);
 input.value="";
-
 typing();
-
 setTimeout(()=>{
 removeTyping();
 addBot(generateReply(text));
 },800);
-
 }
-
-/* Enter للإرسال */
-document.getElementById("input").addEventListener("keypress",e=>{
-if(e.key==="Enter") send();
-});
-
-/* مسح الشات */
-function clearChat(){
-chat.innerHTML="";
-localStorage.removeItem("chatData");
-}
-
-/* نافذة الاشتراك */
-function openModal(){
-document.getElementById("modal").style.display="flex";
-}
-function closeModal(){
-document.getElementById("modal").style.display="none";
-}
-
-
-/* الرد الذكي (أكتر من 1000 احتمال) */
-function random(arr){
-return arr[Math.floor(Math.random()*arr.length)];
-}
+document.getElementById("input").addEventListener("keypress",e=>{if(e.key==="Enter") send();});
+function clearChat(){chat.innerHTML="";localStorage.removeItem("chatData");}
+function openModal(){document.getElementById("modal").style.display="flex";}
+function closeModal(){document.getElementById("modal").style.display="none";}
+function random(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
 function generateReply(msg){
-
 msg=msg.toLowerCase();
 
 /* تحيات */
@@ -287,64 +222,105 @@ return random([
 ]);
 }
 
-/* شتيمة */
-if(msg.includes("غبي")||msg.includes("حمار")||msg.includes("اهبل")){
+/* شتائم */
+if(msg.includes("غبي")||msg.includes("حمار")||msg.includes("اهبل")||msg.includes("كس امك")||msg.includes("ابوك")||msg.includes("قرف")){
 return random([
 "خلينا نتكلم باحترام 🙏",
 "مفيش مشكلة بس ياريت نحافظ على الاحترام",
-"لو في حاجة مضايقاك قولها بهدوء وأنا أساعدك"
+"لو في حاجة مضايقاك قولها بهدوء وأنا أساعدك",
+"شات نظيف أفضل للجميع 😉"
 ]);
 }
 
-/* جيم */
-if(msg.includes("تضخيم")){
-return random([
-"التضخيم محتاج سعرات أعلى + تمرين قوي 💪",
-"ركز على البروتين والكارب وهتشوف فرق جامد",
-"زود أكلك تدريجي ومتنساش النوم"
-]);
+/* تضخيم - مشروبات */
+if(msg.includes("مشروب")||msg.includes("اضخم")||msg.includes("تضخيم")||msg.includes("بروتين شاك")){
+let drinks=[
+"مشروب موز + حليب + عسل 🥛🍌",
+"سموثي فراولة + زبادي + شوفان 🍓",
+"مشروب كاكاو + حليب كامل الدسم",
+"عصير تمر + حليب + مكسرات",
+"بروتين شيك + زبدة فول سوداني",
+"سموثي كاكاو + موز + حليب",
+"مشروب أفوكادو + حليب + عسل",
+"سموثي بيض مسلوق + حليب (اختياري)",
+"كورن فليكس + حليب كامل الدسم",
+"عصير موز + زبدة فول سوداني",
+"بروتين شيك + شوفان + عسل",
+"مشروب زبادي + توت + مكسرات",
+"سموثي شوكولاتة + موز",
+"مشروب تمر + لبن + عسل",
+"كوكتيل فواكه + زبادي",
+"مشروب بروتين + حليب كامل الدسم",
+"سموثي مانجو + موز + زبادي",
+"مشروب مكسرات + عسل + حليب",
+"بروتين شيك سريع التحضير",
+"مشروب موز + أفوكادو + عسل"
+];
+return "جرب هذا المشروب للتضخيم: "+random(drinks);
 }
 
-if(msg.includes("تنشيف")){
+/* تضخيم - أكل غني بالسعرات */
+if(msg.includes("اضافة سعرات")||msg.includes("بروتين")||msg.includes("كارب")||msg.includes("دهون")||msg.includes("اضخم")){
+let foods=[
+"أرز أبيض + زيت زيتون 🍚",
+"بطاطس مسلوقة + زبدة",
+"مكرونة + صلصة + جبنة",
+"دجاج + أرز + خضار",
+"لحم مفروم + خبز",
+"سمك مشوي + بطاطس",
+"بيضة + جبنة قريش",
+"زبدة فول سوداني",
+"مكسرات متنوعة",
+"شوفان + حليب كامل الدسم",
+"كورن فليكس + عسل",
+"أفوكادو + توست",
+"لبن كامل الدسم + موز",
+"كريب محشي جبنة",
+"بان كيك + عسل",
+"سلطة تونة + زيت زيتون",
+"فراخ مشوية + أرز",
+"سلمون + أرز",
+"حمص + زيت زيتون",
+"زبادي + مكسرات"
+];
+return "يمكنك إضافة هذا للأكل لزيادة السعرات: "+random(foods);
+}
+
+/* تنشيف */
+if(msg.includes("عايز انشف")||msg.includes("تنشيف")){
 return random([
 "قلل السعرات وزود البروتين 🔥",
 "الكارديو هيساعدك جدًا في التنشيف",
-"ابعد عن المقليات والسكريات"
+"ابعد عن المقليات والسكريات",
+"جرب سلطة + صدر دجاج مسلوق",
+"وجبة بيض + خضار",
+"سموثي بروتين قليل السعرات",
+"تناول خضار + بروتين فقط"
 ]);
 }
 
-/* أكل */
-if(msg.includes("اكل")||msg.includes("وجبه")){
-let meals=[
-"ممكن تاكل رز وفراخ وسلطة",
-"جرب بيض مع عيش بلدي وجبنة قريش",
-"تونة مع بطاطس مسلوقة اختيار ممتاز"
+/* أككل خفيف للليل */
+if(msg.includes("حاجة خفيفة")||msg.includes("ليل")||msg.includes("اكل خفيف")){
+let snacks=[
+"زبادي مع عسل","تفاح","كمثرى","موز","حفنة مكسرات","توست + جبنة","شوفان سريع",
+"بيض مسلوق","سموثي فواكه","خيار + جزر","سلطة صغيرة","توست + أفوكادو","كورن فليكس مع حليب",
+"بروتين شيك","سلطة تونة صغيرة","كريب خفيف","عصير طبيعي","قطعة جبنة قريش",
+"كوب حليب دافئ","شيا بودينغ","شوربة خفيفة"
 ];
-return random(meals);
+return "ممكن تاخد حاجة خفيفة الآن: "+random(snacks);
 }
 
-/* ردود عامة كثيرة */
+/* أكتر ردود عامة */
 let general=[
-"فاهمك كمل كلامك",
-"ممكن توضح أكتر؟",
-"تمام.. وبعد كده؟",
-"أنا معاك قول اللي في بالك",
-"فكرة حلوة بصراحة",
-"ممكن نطور الموضوع أكتر",
-"خليني أفكر معاك",
-"قول تفاصيل أكتر عشان أساعدك"
+"فاهمك كمل كلامك","ممكن توضح أكتر؟","تمام.. وبعد كده؟","أنا معاك قول اللي في بالك",
+"فكرة حلوة بصراحة","ممكن نطور الموضوع أكتر","خليني أفكر معاك","قول تفاصيل أكتر عشان أساعدك",
+"تمام 👍","ممكن نعمل خطة مع بعض","جرب تعمل رياضة قبل الأكل","ركز على البروتين والكارب",
+"نام كويس وصحصح بكرة","جرب وجبة متوازنة"
 ];
-
-/* تكبير الردود عشان يبقى 1000+ احتمال */
 let big=[];
-for(let i=0;i<200;i++){
-big.push(...general);
-}
-
+for(let i=0;i<150;i++){ big.push(...general); }
 return random(big);
-
 }
-
 </script>
 
 </body>
