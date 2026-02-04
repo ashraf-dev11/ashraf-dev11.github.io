@@ -1,1 +1,184 @@
-<title>خطة الشهرية للوجبات والسعرات</title>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الخطة الشهرية الذكية</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    background: linear-gradient(to right,#fceabb,#f8b500);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.container{
+    max-width: 1000px;
+    background:#fff;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    margin-top:30px;
+}
+h1{
+    text-align:center;
+    color:#d35400;
+    margin-bottom:30px;
+}
+table th{
+    background:#e67e22;
+    color:#fff;
+    text-align:center;
+}
+table td{
+    text-align:center;
+    font-size:16px;
+}
+.select-plan{
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>📅 الخطة الشهرية الذكية</h1>
+
+<div class="select-plan">
+<label>اختر خطة جاهزة:</label>
+<select class="form-select" id="planSelect"></select>
+</div>
+
+<table class="table table-bordered" id="monthlyTable">
+<thead>
+<tr>
+<th>اليوم</th>
+<th>الإفطار</th>
+<th>سناك 1</th>
+<th>الغداء</th>
+<th>سناك 2</th>
+<th>العشاء</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="d-flex justify-content-between mt-3">
+<button class="btn btn-warning" onclick="changePlan()">🔄 اختر خطة جديدة</button>
+<button class="btn btn-primary" onclick="window.location.href='index.html'">⬅️ رجوع للصفحة الرئيسية</button>
+</div>
+</div>
+
+<script>
+/* ======================
+   وجبات بسيطة من البيت
+====================== */
+const simpleMeals = {
+cut:{
+breakfast:["بيض مسلوق + خبز بلدي","شوفان بالمياه + تفاحة","زبادي عادي + موز","توست أسمر + جبنة قريش","أومليت بياض بيض"],
+snack1:["تفاح","برتقال","حفنة فول سوداني","خيار","جزر","زبادي طبيعي","شاي أخضر"],
+lunch:["أرز أبيض + بيض","مكرونة مسلوقة + طماطم","عدس مسلوق","بطاطس مسلوقة + خضار","خضار مطبوخ + أرز"],
+snack2:["زبادي + موز","تفاحة","موز","حفنة مكسرات بسيطة","كوب حليب"],
+dinner:["بيض مسلوق + خضار","جبنة قريش + خيار","شوربة عدس","سلطة خضار","فول مسلوق"]
+},
+bulk:{
+breakfast:["بيض + خبز بلدي","شوفان + موز","بان كيك بسيط","توست + زبدة فول سوداني","بيض + جبنة"],
+snack1:["موز","تمر","مكسرات بسيطة","زبادي كامل","ساندويتش فول سوداني"],
+lunch:["أرز + بيض","مكرونة + طماطم","عدس مسلوق","بطاطس + دجاج مسلوق","خضار مطبوخ + أرز"],
+snack2:["زبادي + موز","تفاحة","موز","ساندويتش جبنة","كوب حليب"],
+dinner:["بيض + خضار مسلوق","جبنة قريش + خيار","شوربة عدس","سلطة خضار","فول + خبز بلدي"]
+}
+};
+
+/* ======================
+   توليد أكثر من 10 خطط شهرية
+====================== */
+const plans = [];
+
+for(let i=1;i<=10;i++){
+    let plan = [];
+    for(let d=1; d<=30; d++){
+        plan.push({
+            breakfast:[],
+            snack1:[],
+            lunch:[],
+            snack2:[],
+            dinner:[]
+        });
+    }
+    plans.push(plan);
+}
+
+/* ======================
+   ملء كل خطة بشكل عشوائي
+====================== */
+function fillPlans(goal){
+    plans.forEach(plan=>{
+        plan.forEach(day=>{
+            for(let meal in day){
+                let arr = simpleMeals[goal][meal];
+                let choice = arr[Math.floor(Math.random()*arr.length)];
+                day[meal] = choice;
+            }
+        });
+    });
+}
+
+/* ======================
+   عرض الخطة المحددة
+====================== */
+function displayPlan(index){
+    const tbody = document.querySelector("#monthlyTable tbody");
+    tbody.innerHTML = "";
+    const plan = plans[index];
+    for(let i=0;i<30;i++){
+        tbody.innerHTML += `<tr>
+        <td>اليوم ${i+1}</td>
+        <td>${plan[i].breakfast}</td>
+        <td>${plan[i].snack1}</td>
+        <td>${plan[i].lunch}</td>
+        <td>${plan[i].snack2}</td>
+        <td>${plan[i].dinner}</td>
+        </tr>`;
+    }
+}
+
+/* ======================
+   ملء خيارات السليكت
+====================== */
+function populateSelect(){
+    const select = document.getElementById("planSelect");
+    select.innerHTML = "";
+    for(let i=0;i<plans.length;i++){
+        select.innerHTML += `<option value="${i}">الخطة ${i+1}</option>`;
+    }
+    select.addEventListener("change",()=>{
+        displayPlan(select.value);
+    });
+}
+
+/* ======================
+   تغيير الخطة عشوائياً
+====================== */
+function changePlan(){
+    const select = document.getElementById("planSelect");
+    let rand = Math.floor(Math.random()*plans.length);
+    select.value = rand;
+    displayPlan(rand);
+}
+
+/* ======================
+   بدء
+====================== */
+document.addEventListener("DOMContentLoaded",()=>{
+    let goal = localStorage.getItem("goal") || "cut";
+    fillPlans(goal);
+    populateSelect();
+    displayPlan(0);
+});
+</script>
+
+</body>
+</html>
+
