@@ -2,159 +2,204 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخطة الشهرية الاحترافية</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>جدول التغذية الاحترافي</title>
 
 <style>
 body{
-background:linear-gradient(to right,#e3f2fd,#bbdefb);
-font-family:Arial;
+font-family: Arial;
+background:#111;
+color:white;
+text-align:center;
+direction:rtl;
 }
 
-.plan-card{
-cursor:pointer;
-padding:20px;
-border-radius:15px;
-background:white;
-font-weight:bold;
-transition:.3s;
-box-shadow:0 4px 10px rgba(0,0,0,.1);
+select,button,input{
+padding:10px;
+margin:10px;
+border-radius:8px;
+border:none;
+font-size:16px;
 }
 
-.plan-card:hover{
-transform:scale(1.05);
-}
-
-.day-box{
-background:white;
+.day{
+background:#222;
+margin:15px;
 padding:15px;
-border-radius:15px;
-margin-top:15px;
-box-shadow:0 4px 10px rgba(0,0,0,.1);
+border-radius:12px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container mt-4">
+<h2>🔥 جدول تغذية 30 يوم</h2>
 
-<h3 class="text-center mb-4">📅 اختر الخطة</h3>
+<select id="type">
+<option value="bulk">تضخيم</option>
+<option value="cut">تنشيف</option>
+<option value="ramadan">رمضان</option>
+</select>
 
-<div class="row text-center">
+<input type="number" id="weight" placeholder="اكتب وزنك">
 
-<div class="col-md-4"><div class="plan-card" onclick="startPlan('bulk')">💪 تضخيم</div></div>
-<div class="col-md-4"><div class="plan-card" onclick="startPlan('cut')">🔥 تنشيف</div></div>
-<div class="col-md-4"><div class="plan-card" onclick="startPlan('ramadanBulk')">🌙 تضخيم رمضان</div></div>
-<div class="col-md-4 mt-3"><div class="plan-card" onclick="startPlan('ramadanCut')">⭐ تنشيف رمضان</div></div>
-
-</div>
+<br>
+<button onclick="build()">اعمل الجدول</button>
 
 <div id="result"></div>
 
-</div>
-
 <script>
 
-/* ================= البيانات ================= */
+/* ================= بيانات الأكل ================= */
 
 const bulkMeals=[
-"بيض + عيش بلدي","شوفان + لبن + موز","فول + زيت زيتون","جبنة + عيش",
-"بطاطس + بيض","رز + فراخ","مكرونة + لحمة","عدس + عيش",
-"بطاطس فرن + تونة","رز + بيض","فول + طحينة","شوفان + عسل",
-"ساندويتش جبنة","بيض أومليت","رز + كبدة"
+"رز + فراخ مشوية",
+"رز + لحمة",
+"مكرونة + فراخ",
+"بطاطس فرن + كفتة",
+"رز + سمك",
+"رز + بيض + جبنة",
+"محشي + فراخ",
+"رز + كبدة",
+"مكرونة + لحمة مفرومة",
+"رز + برجر بلدي"
 ];
 
 const cutMeals=[
-"بيض مسلوق + خيار","شوفان بالمياه","زبادي لايت","تونة + سلطة",
-"فراخ مشوية + خضار","سمك مشوي","جبنة قريش","عدس بدون زيت",
-"بيض + سبانخ","سلطة تونة","خضار سوتيه","شوربة عدس",
-"زبادي + شوفان","بيض + طماطم","سلطة خضراء + فراخ"
+"فراخ مشوية + سلطة",
+"سمك مشوي + سلطة",
+"تونة + سلطة",
+"بيض مسلوق + خضار",
+"شوربة عدس",
+"فراخ + خضار سوتيه",
+"رز بني + تونة",
+"جبنة قريش + سلطة",
+"عدس + خضار",
+"بيض + خيار"
 ];
 
-const bulkDrinks=[
-"لبن + موز + عسل",
-"لبن + تمر",
-"سموثي فول سوداني + لبن",
-"لبن + شوفان + عسل",
-"سموثي موز + تمر"
+const drinks=[
+"سموثي موز ولبن",
+"عصير فراولة",
+"عصير مانجو",
+"لبن بالعسل",
+"تمر باللبن",
+"سموثي شوفان"
 ];
 
-const cutFruits=[
-"تفاح","برتقال","كمثرى","موز","جوافة","كيوي","فراولة"
+const nuts=[
+"مكسرات مشكلة",
+"فول سوداني",
+"لوز",
+"كاجو",
+"عين جمل"
 ];
 
-const nuts=["حفنة مكسرات","فول سوداني","لوز","عين جمل"];
+const fruits=[
+"تفاح",
+"موز",
+"برتقال",
+"كمثرى",
+"فراولة",
+"بطيخ"
+];
 
-/* ================= توليد الأيام ================= */
+const suhoorBulk=[
+"فول + زيت زيتون + عيش",
+"بيض + جبنة + عيش",
+"شوفان + لبن + موز"
+];
+
+const suhoorCut=[
+"زبادي + شوفان",
+"بيض مسلوق + خيار",
+"جبنة قريش + خيار"
+];
+
+/* ================= أدوات ================= */
 
 function shuffle(arr){
 return [...arr].sort(()=>Math.random()-0.5);
 }
 
-function generate30(baseMeals){
+function generate30(list){
 
-let first10=shuffle(baseMeals).slice(0,10);
+let first10=shuffle(list);
 
-let second10=[
-...shuffle(first10).slice(0,5),
-...shuffle(baseMeals).slice(0,5)
+let second10=shuffle([...list,...list.slice(0,5)]);
+let last10=shuffle([...list,...list]);
+
+return [
+...first10.slice(0,10),
+...second10.slice(0,10),
+...last10.slice(0,10)
 ];
-
-let third10=shuffle(baseMeals).slice(0,10);
-
-return [...first10,...second10,...third10];
 }
 
-/* ================= التضخيم ================= */
+function rand(arr){
+return arr[Math.floor(Math.random()*arr.length)];
+}
 
-function buildBulk(){
+/* ================= الحساب ================= */
 
-let meals=generate30(bulkMeals);
+function calories(type,weight){
+
+if(!weight) return "غير محدد";
+
+if(type==="bulk") return Math.round(weight*40)+" سعر";
+if(type==="cut") return Math.round(weight*28)+" سعر";
+if(type==="ramadan") return Math.round(weight*35)+" سعر";
+
+}
+
+/* ================= بناء الجدول ================= */
+
+function build(){
+
+let type=document.getElementById("type").value;
+let weight=document.getElementById("weight").value;
+let res=document.getElementById("result");
+
+let html=`<h3>السعرات التقريبية: ${calories(type,weight)}</h3>`;
+
+if(type==="ramadan"){
+html+=buildRamadan();
+}
+else{
+html+=buildNormal(type);
+}
+
+res.innerHTML=html;
+}
+
+/* ================= الأيام العادية ================= */
+
+function buildNormal(type){
+
+let meals=generate30(type==="bulk"?bulkMeals:cutMeals);
+
 let html="";
 
 meals.forEach((meal,i)=>{
 
 html+=`
-<div class="day-box">
-<h5>اليوم ${i+1}</h5>
+<div class="day">
 
-<p>🍳 فطار / غداء : ${meal}</p>
-<p>🥤 سناك 1 (مشروب تضخيم) : ${random(bulkDrinks)}</p>
-<p>🥜 سناك 2 : ${random(nuts)}</p>
-<p>🌙 عشاء : ${random(bulkMeals)}</p>
+<h3>اليوم ${i+1}</h3>
 
-</div>
-`;
+<p>🍽 الوجبة الرئيسية</p>
+<p>${meal}</p>
 
-});
+<p>🥤 سناك مشروب</p>
+<p>${rand(drinks)}</p>
 
-return html;
-}
+<p>🍏 سناك أكل</p>
+<p>${type==="bulk"?rand(nuts):rand(fruits)}</p>
 
-/* ================= التنشيف ================= */
-
-function buildCut(){
-
-let meals=generate30(cutMeals);
-let html="";
-
-meals.forEach((meal,i)=>{
-
-html+=`
-<div class="day-box">
-<h5>اليوم ${i+1}</h5>
-
-<p>🍳 فطار / غداء : ${meal}</p>
-<p>🍎 سناك 1 : ${random(cutFruits)}</p>
-<p>🥜 سناك 2 : ${random(nuts)}</p>
-<p>🌙 عشاء : ${random(cutMeals)}</p>
+<p>🍽 وجبة خفيفة</p>
+<p>${type==="bulk"?rand(bulkMeals):rand(cutMeals)}</p>
 
 </div>
 `;
-
 });
 
 return html;
@@ -162,63 +207,36 @@ return html;
 
 /* ================= رمضان ================= */
 
-function buildRamadan(type){
+function buildRamadan(){
 
-let meals=generate30(type==="bulk"?bulkMeals:cutMeals);
+let meals=generate30(bulkMeals);
+
 let html="";
 
 meals.forEach((meal,i)=>{
 
 html+=`
-<div class="day-box">
-<h5>اليوم ${i+1}</h5>
+<div class="day">
 
-<p>🌅 الإفطار : ${meal}</p>
+<h3>🌙 اليوم ${i+1}</h3>
 
-<p>🍹 سناك بعد الإفطار :
-${type==="bulk"?random(bulkDrinks):random(cutFruits)}
-</p>
+<p>🍽 الإفطار</p>
+<p>${meal}</p>
 
-<p>🌙 سناك بعد التراويح :
-${type==="bulk"?random(nuts):random(cutFruits)}
-</p>
+<p>🥤 بعد الإفطار بساعتين</p>
+<p>${rand(drinks)}</p>
 
-<p>🥗 السحور :
-${random(meals)}
-</p>
+<p>🍏 بعد التراويح</p>
+<p>${rand(nuts)}</p>
+
+<p>🌅 السحور</p>
+<p>${rand(suhoorBulk)}</p>
 
 </div>
 `;
-
 });
 
 return html;
-}
-
-/* ================= التشغيل ================= */
-
-function random(arr){
-return arr[Math.floor(Math.random()*arr.length)];
-}
-
-function startPlan(type){
-
-let html="";
-
-if(type==="bulk") html=buildBulk();
-if(type==="cut") html=buildCut();
-if(type==="ramadanBulk") html=buildRamadan("bulk");
-if(type==="ramadanCut") html=buildRamadan("cut");
-
-document.getElementById("result").innerHTML=html;
-localStorage.setItem("plan",html);
-
-}
-
-/* تحميل الخطة */
-window.onload=()=>{
-let saved=localStorage.getItem("plan");
-if(saved) document.getElementById("result").innerHTML=saved;
 }
 
 </script>
