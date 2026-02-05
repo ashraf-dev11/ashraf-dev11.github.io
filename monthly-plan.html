@@ -2,166 +2,256 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>خطة غذائية 30 يوم</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الخطط الغذائية</title>
 
 <style>
 body{
-background: linear-gradient(to right,#d2fefd,#a1eafb);
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-color:#111;
-text-align:center;
+font-family:Tahoma;
+margin:0;
+background:linear-gradient(to right,#d2fefd,#a1eafb);
 }
-h2{
-margin-top:30px;
-}
+
 .container{
-display:flex;
-flex-wrap:wrap;
-justify-content:center;
-gap:20px;
-margin-top:40px;
+padding:30px;
+max-width:1100px;
+margin:auto;
 }
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
 .card{
-width:220px;
-height:150px;
 perspective:1000px;
 cursor:pointer;
 }
+
 .inner{
 position:relative;
 width:100%;
-height:100%;
-transition:0.8s;
+height:160px;
+transition:0.6s;
 transform-style:preserve-3d;
 }
+
 .card.flip .inner{
 transform:rotateY(180deg);
 }
-.front , .back{
+
+.front,.back{
 position:absolute;
 width:100%;
 height:100%;
 border-radius:15px;
 display:flex;
-flex-direction:column;
 justify-content:center;
 align-items:center;
-backface-visibility:hidden;
-padding:10px;
-}
-.front{
-background:#222;
-color:#fff;
-font-size:40px;
-}
-.back{
-background:#333;
-color:#fff;
-transform:rotateY(180deg);
-font-size:14px;
-line-height:1.5;
-overflow-y:auto;
+color:white;
+font-size:20px;
 padding:15px;
+text-align:center;
+backface-visibility:hidden;
+}
+
+.front{
+background:#0077b6;
+}
+
+.back{
+background:#0096c7;
+transform:rotateY(180deg);
+font-size:15px;
+}
+
+.planBox{
+margin-top:30px;
+background:white;
+padding:20px;
+border-radius:15px;
+max-height:400px;
+overflow:auto;
+}
+
+.day{
+border-bottom:1px solid #ddd;
+padding:10px 0;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔥 اختر خطتك الغذائية 30 يوم</h2>
+<div class="container">
 
-<div class="container" id="plansContainer">
+<h2>اختر خطتك 👇</h2>
+
+<div class="grid">
+
+<div class="card" onclick="selectPlan('cut')" >
+<div class="inner">
+<div class="front">🔥 تنشيف ❗</div>
+<div class="back">لو وزنك زائد هتساعدك تنزل دهون بطريقة صحية</div>
+</div>
+</div>
+
+<div class="card" onclick="selectPlan('bulk')" >
+<div class="inner">
+<div class="front">💪 تضخيم ❗</div>
+<div class="back">لو نحيف هتزود وزنك وعضلاتك بالأكل والسعرات</div>
+</div>
+</div>
+
+<div class="card" onclick="selectPlan('vcut')" >
+<div class="inner">
+<div class="front">🥦 تنشيف نباتي ❗</div>
+<div class="back">تنشيف بدون بروتين حيواني</div>
+</div>
+</div>
+
+<div class="card" onclick="selectPlan('vbulk')" >
+<div class="inner">
+<div class="front">🌱 تضخيم نباتي ❗</div>
+<div class="back">زيادة وزن للنباتيين بسعرات عالية</div>
+</div>
+</div>
+
+<div class="card" onclick="selectPlan('ramadan')" >
+<div class="inner">
+<div class="front">🌙 خطة رمضان ❗</div>
+<div class="back">تنظيم أكلك بين الإفطار والسحور</div>
+</div>
+</div>
+
+</div>
+
+<div id="planResult" class="planBox"></div>
+
 </div>
 
 <script>
-// بيانات الخطط
-const plans = [
-{
-name:"تضخيم",
-desc:"خطة تضخيم للشخص النحيف، ستزيد وزنك بشكل صحي إذا التزمت بالخطة، سناك يومي يحتوي على مكسرات أو مشروب عالي سعرات."
-},
-{
-name:"تنشيف",
-desc:"خطة تنشيف للشخص الذي يريد حرق الدهون بسهولة، سناك يومي يحتوي على فواكه ومكسرات قليلة السعرات."
-},
-{
-name:"تضخيم نباتي",
-desc:"خطة تضخيم للنباتيين، تساعدك على زيادة الوزن بدون بروتين حيواني."
-},
-{
-name:"تنشيف نباتي",
-desc:"خطة تنشيف للنباتيين، تساعدك على خسارة الدهون مع الحفاظ على التغذية."
-},
-{
-name:"رمضان",
-desc:"خطة رمضان تساعدك للوصول لأفضل نتيجة، مع سحور، إفطار، سناك بعد الإفطار وسناك بعد التراويح."
-}
-];
 
-// أكلات 30 يوم لكل خطة
-const mealsData = {
-"تضخيم":[],
-"تنشيف":[],
-"تضخيم نباتي":[],
-"تنشيف نباتي":[],
-"رمضان":[]
+function rand(arr){
+return arr[Math.floor(Math.random()*arr.length)];
+}
+
+/* ===== الأكلات ===== */
+
+const foods={
+
+bulk:{
+meals:["رز + فراخ","مكرونة + لحمة","رز + بيض","بطاطس + بيض","رز + تونة","مكرونة + تونة","رز + كفتة","بطاطس + فراخ","رز + فول","عدس + عيش"],
+snacks:["موز","تمر","مكسرات","عسل + عيش","لبن كامل"],
+drinks:[
+"لبن + موز + عسل",
+"لبن + تمر + شوفان",
+"لبن + فول سوداني",
+"لبن + شوفان + عسل",
+"سموثي موز + لبن"
+]
+},
+
+cut:{
+meals:["فراخ مشوية + سلطة","تونة + سلطة","بيض مسلوق + خيار","عدس بدون زيت","فول بدون زيت","جبنة قريش + سلطة"],
+snacks:["تفاح","برتقال","موز","خيار","جزر","حفنة مكسرات"]
+},
+
+vbulk:{
+meals:["عدس + رز","فول + عيش","بطاطس + فول","رز + فاصوليا","مكرونة + عدس"],
+snacks:["موز","تمر","مكسرات","عسل"],
+drinks:["لبن نباتي + موز","سموثي تمر + شوفان"]
+},
+
+vcut:{
+meals:["عدس + سلطة","فول بدون زيت","فاصوليا","بطاطس مسلوقة","حمص"],
+snacks:["تفاح","برتقال","خيار","جزر"]
+},
+
+ramadan:{
+main:["رز + فراخ","رز + لحمة","مكرونة + فراخ","بطاطس + لحمة","رز + سمك"],
+snacks:["تمر","مكسرات","فاكهة"],
+suhoor:["فول","بيض","زبادي","جبنة قريش"]
+}
+
 };
 
-// توليد أكلات بسيطة لكل خطة (مثال)
-function generateMeals(){
-    for(let plan in mealsData){
-        let days = 30;
-        let used = new Set();
-        for(let i=1;i<=days;i++){
-            let breakfast = getUnique("breakfast",used,plan);
-            let snack1 = getUnique("snack1",used,plan);
-            let lunch = getUnique("lunch",used,plan);
-            let snack2 = getUnique("snack2",used,plan);
-            let dinner = getUnique("dinner",used,plan);
-            mealsData[plan].push({
-                day:i,
-                breakfast, snack1, lunch, snack2, dinner
-            });
-        }
-    }
+
+/* ===== توليد 30 يوم ===== */
+
+function selectPlan(type){
+
+let box=document.getElementById("planResult");
+box.innerHTML="";
+
+let used=new Set();
+
+for(let d=1;d<=30;d++){
+
+let html=`<div class="day"><b>اليوم ${d}</b><br>`;
+
+if(type==="bulk"){
+
+html+=`
+مشروب بالك: ${rand(foods.bulk.drinks)}<br>
+سناك: ${rand(foods.bulk.snacks)}<br>
+وجبة رئيسية: ${rand(foods.bulk.meals)}<br>
+عشاء: ${rand(foods.bulk.meals)}
+`;
+
 }
 
-// دالة لتوليد أكل بسيط بدون تكرار
-function getUnique(type,used,plan){
-    const options = {
-        breakfast:["بيض + خبز","شوفان + موز","توست + جبنة","زبادي + فواكه","أومليت بياض بيض","بان كيك شوفان","بيض مسلوق + خيار","شوفان + تفاح","بيض + سبانخ","زبادي + شوفان"],
-        snack1:["مكسرات","حليب + موز","تفاح","جزر + خيار","زبادي لايت","كيوي","برتقال","تمر","قهوة بدون سكر","عصير طبيعي"],
-        lunch:["أرز + دجاج","مكرونة + لحم","تونة + أرز","سمك مشوي + خضار","عدس + خضار","كفتة + أرز","محشي","برجر منزلي","شوربة + خبز","سلطة + بيض"],
-        snack2:["زبادي","مكسرات","عصير طبيعي","فواكه","كريب","ساندويتش تونة","شوفان سريع","توست + جبنة","موز","تمر"],
-        dinner:["سلطة + بيض مسلوق","سمك مشوي + خضار","عدس + خبز","دجاج مسلوق + أرز","توست + جبنة","بيض + سبانخ","شوربة خضار","زبادي + فواكه","شوفان سريع","كريب خفيف"]
-    };
-    let item;
-    do{
-        item = options[type][Math.floor(Math.random()*options[type].length)];
-    }while(used.has(plan+type+item));
-    used.add(plan+type+item);
-    return item;
+else if(type==="cut"){
+
+html+=`
+سناك: ${rand(foods.cut.snacks)}<br>
+فطار: ${rand(foods.cut.meals)}<br>
+غدا: ${rand(foods.cut.meals)}<br>
+عشا: ${rand(foods.cut.meals)}
+`;
+
 }
 
-// إنشاء كروت الخطط
-function renderCards(){
-    const container = document.getElementById("plansContainer");
-    plans.forEach(p=>{
-        const card = document.createElement("div");
-        card.className="card";
-        card.innerHTML=`
-        <div class="inner">
-            <div class="front">❗</div>
-            <div class="back"><b>${p.name}</b><br><br>${p.desc}</div>
-        </div>`;
-        card.onclick = ()=>card.classList.toggle("flip");
-        container.appendChild(card);
-    });
+else if(type==="vbulk"){
+
+html+=`
+مشروب بالك: ${rand(foods.vbulk.drinks)}<br>
+سناك: ${rand(foods.vbulk.snacks)}<br>
+وجبة رئيسية: ${rand(foods.vbulk.meals)}<br>
+عشاء: ${rand(foods.vbulk.meals)}
+`;
+
 }
 
-generateMeals();
-renderCards();
+else if(type==="vcut"){
+
+html+=`
+سناك: ${rand(foods.vcut.snacks)}<br>
+فطار: ${rand(foods.vcut.meals)}<br>
+غدا: ${rand(foods.vcut.meals)}<br>
+عشا: ${rand(foods.vcut.meals)}
+`;
+
+}
+
+else if(type==="ramadan"){
+
+html+=`
+إفطار: تمر + ${rand(foods.ramadan.main)}<br>
+بعد الإفطار: ${rand(foods.ramadan.snacks)}<br>
+بعد التراويح: ${rand(foods.ramadan.snacks)}<br>
+سحور: ${rand(foods.ramadan.suhoor)}
+`;
+
+}
+
+html+="</div>";
+
+box.innerHTML+=html;
+}
+
+}
 
 </script>
 
