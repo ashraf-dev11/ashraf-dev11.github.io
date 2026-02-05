@@ -3,44 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>الخطة الشهرية</title>
+<title>الخطة الشهرية الذكية</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
 body{
-background:linear-gradient(to right,#dff6ff,#b8e4f0);
+background:linear-gradient(to right,#e0f7fa,#ffffff);
 font-family:Arial;
 }
-
-.plan-card{
-cursor:pointer;
-transition:.3s;
-font-weight:bold;
-}
-
-.plan-card:hover{
-transform:scale(1.05);
-}
-
+.container{margin-top:30px;}
+.plan-card{cursor:pointer;transition:.3s;}
+.plan-card:hover{transform:scale(1.05);}
 .day-box{
-background:white;
-padding:18px;
+background:#fff;
+padding:20px;
 border-radius:15px;
-box-shadow:0 4px 10px rgba(0,0,0,.1);
+box-shadow:0 5px 15px rgba(0,0,0,.1);
 margin-bottom:20px;
 }
-
 .food{
 display:flex;
 align-items:center;
-gap:12px;
+gap:15px;
 margin-bottom:10px;
 }
-
 .food img{
-width:65px;
-height:65px;
+width:70px;
+height:70px;
 border-radius:10px;
 object-fit:cover;
 }
@@ -49,210 +39,114 @@ object-fit:cover;
 
 <body>
 
-<div class="container mt-4">
+<div class="container">
 
-<h2 class="text-center mb-4">📅 اختر خطتك</h2>
+<h2 class="text-center mb-4">📅 اختر الخطة</h2>
 
-<div class="row text-center">
-
+<div class="row text-center g-3">
 <div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('bulk')">💪 تضخيم</div></div>
 <div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('cut')">🔥 تنشيف</div></div>
 <div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('veganBulk')">🌱 تضخيم نباتي</div></div>
-<div class="col-md-4 mt-3"><div class="card plan-card p-3" onclick="startPlan('veganCut')">🥗 تنشيف نباتي</div></div>
-<div class="col-md-4 mt-3"><div class="card plan-card p-3" onclick="startPlan('ramadanBulk')">🌙 تضخيم رمضان</div></div>
-<div class="col-md-4 mt-3"><div class="card plan-card p-3" onclick="startPlan('ramadanCut')">⭐ تنشيف رمضان</div></div>
-
+<div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('veganCut')">🥗 تنشيف نباتي</div></div>
+<div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('ramadanBulk')">🌙 تضخيم رمضان</div></div>
+<div class="col-md-4"><div class="card plan-card p-3" onclick="startPlan('ramadanCut')">⭐ تنشيف رمضان</div></div>
 </div>
 
 <hr>
-
 <div id="result"></div>
 
 </div>
 
 <script>
-
-/* الوزن */
-let weight = Number(prompt("ادخل وزنك بالكيلو")) || 70;
+const weight = Number(prompt("ادخل وزنك بالكيلو")) || 70;
 
 /* السعرات */
-function calories(goal){
-
-if(goal==="bulk") return weight*40;
-if(goal==="cut") return weight*28;
-if(goal==="veganBulk") return weight*38;
-if(goal==="veganCut") return weight*27;
-if(goal==="ramadanBulk") return weight*42;
-if(goal==="ramadanCut") return weight*26;
-
-}
-
-/* بيانات الطعام */
-const foodData={
-
-bulk:{
-breakfast:[
-{name:"بيض + عيش بلدي",img:"https://images.unsplash.com/photo-1551183053-bf91a1d81141"},
-{name:"شوفان + لبن + موز",img:"https://images.unsplash.com/photo-1517677208171-0bc6725a3e60"},
-{name:"فول + زيت زيتون + عيش",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"}
-],
-
-snack:[
-{name:"تمر + لبن",img:"https://images.unsplash.com/photo-1606787366850-de6330128bfc"},
-{name:"مكسرات",img:"https://images.unsplash.com/photo-1508747703725-719777637510"},
-{name:"ساندويتش زبدة فول سوداني",img:"https://images.unsplash.com/photo-1550317138-10000687a72b"}
-],
-
-lunch:[
-{name:"رز + فراخ مشوية",img:"https://images.unsplash.com/photo-1604908177522-040cb9c4dc0c"},
-{name:"مكرونة + لحمة",img:"https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5"},
-{name:"بطاطس + بيض",img:"https://images.unsplash.com/photo-1512058564366-c9e3e046a4d3"}
-],
-
-dinner:[
-{name:"جبنة + عيش",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"},
-{name:"بيض أومليت",img:"https://images.unsplash.com/photo-1525351484163-7529414344d8"},
-{name:"تونة + عيش",img:"https://images.unsplash.com/photo-1604908554028-89b0c5efdc2b"}
-]
-},
-
-cut:{
-breakfast:[
-{name:"بيض مسلوق",img:"https://images.unsplash.com/photo-1512058564366-c9e3e046a4d3"},
-{name:"شوفان بالمياه",img:"https://images.unsplash.com/photo-1517677208171-0bc6725a3e60"},
-{name:"زبادي لايت",img:"https://images.unsplash.com/photo-1488477181946-6428a0291777"}
-],
-
-snack:[
-{name:"تفاح",img:"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6"},
-{name:"خيار",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"},
-{name:"جزر",img:"https://images.unsplash.com/photo-1582515073490-dc1a1e2a7d36"}
-],
-
-lunch:[
-{name:"فراخ مشوية + سلطة",img:"https://images.unsplash.com/photo-1604908177522-040cb9c4dc0c"},
-{name:"سمك مشوي",img:"https://images.unsplash.com/photo-1544025162-d76694265947"},
-{name:"تونة + سلطة",img:"https://images.unsplash.com/photo-1604908554028-89b0c5efdc2b"}
-],
-
-dinner:[
-{name:"جبنة قريش",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"},
-{name:"بيض مسلوق",img:"https://images.unsplash.com/photo-1512058564366-c9e3e046a4d3"},
-{name:"زبادي",img:"https://images.unsplash.com/photo-1488477181946-6428a0291777"}
-]
-},
-
-veganBulk:{
-breakfast:[
-{name:"فول + طحينة",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"},
-{name:"شوفان + موز",img:"https://images.unsplash.com/photo-1517677208171-0bc6725a3e60"}
-],
-snack:[
-{name:"تمر",img:"https://images.unsplash.com/photo-1606787366850-de6330128bfc"},
-{name:"مكسرات",img:"https://images.unsplash.com/photo-1508747703725-719777637510"}
-],
-lunch:[
-{name:"رز + فاصوليا",img:"https://images.unsplash.com/photo-1604908177522-040cb9c4dc0c"},
-{name:"بطاطس فرن",img:"https://images.unsplash.com/photo-1512058564366-c9e3e046a4d3"}
-],
-dinner:[
-{name:"عدس",img:"https://images.unsplash.com/photo-1547592180-85f173990554"},
-{name:"سلطة كبيرة",img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c"}
-]
-},
-
-veganCut:{
-breakfast:[
-{name:"شوفان بالمياه",img:"https://images.unsplash.com/photo-1517677208171-0bc6725a3e60"}
-],
-snack:[
-{name:"تفاح",img:"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6"}
-],
-lunch:[
-{name:"عدس + سلطة",img:"https://images.unsplash.com/photo-1547592180-85f173990554"}
-],
-dinner:[
-{name:"خضار سوتيه",img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c"}
-]
-},
-
-ramadanBulk:{
-breakfast:[
-{name:"تمر + لبن",img:"https://images.unsplash.com/photo-1606787366850-de6330128bfc"}
-],
-snack:[
-{name:"عصير طبيعي",img:"https://images.unsplash.com/photo-1553530666-ba11a7da3888"}
-],
-lunch:[
-{name:"رز + فراخ",img:"https://images.unsplash.com/photo-1604908177522-040cb9c4dc0c"}
-],
-dinner:[
-{name:"سحور فول + عيش",img:"https://images.unsplash.com/photo-1604908176997-431eafda2e0c"}
-]
-},
-
-ramadanCut:{
-breakfast:[
-{name:"تمر + مياه",img:"https://images.unsplash.com/photo-1606787366850-de6330128bfc"}
-],
-snack:[
-{name:"شوربة عدس",img:"https://images.unsplash.com/photo-1547592180-85f173990554"}
-],
-lunch:[
-{name:"فراخ مشوية + سلطة",img:"https://images.unsplash.com/photo-1604908177522-040cb9c4dc0c"}
-],
-dinner:[
-{name:"سحور زبادي + خيار",img:"https://images.unsplash.com/photo-1488477181946-6428a0291777"}
-]
-}
-
+const caloriesMap = {
+bulk: weight * 40,
+cut: 1800,
+veganBulk: weight * 38,
+veganCut: 1700,
+ramadanBulk: weight * 42,
+ramadanCut: 1700
 };
 
-/* اختيار عشوائي */
-function pick(arr){
-return arr[Math.floor(Math.random()*arr.length)];
+/* الأكلات (بيتيه وبصور صحيحة) */
+const foods = {
+bulk:[
+{name:"بيض + عيش بلدي",img:"https://images.unsplash.com/photo-1551218808-94e220e084d2"},
+{name:"رز أبيض + فراخ",img:"https://images.unsplash.com/photo-1604908177522-0408fbdc7a3d"},
+{name:"بطاطس مسلوقة",img:"https://images.unsplash.com/photo-1589927986089-35812388d1b4"},
+{name:"فول بزيت",img:"https://images.unsplash.com/photo-1617191519401-65a3f5c5e8a4"},
+{name:"مكرونة",img:"https://images.unsplash.com/photo-1608756687911-61fba8f09c33"}
+],
+cut:[
+{name:"بيض مسلوق",img:"https://images.unsplash.com/photo-1582169296194-e4d644c48063"},
+{name:"صدر فراخ مشوي",img:"https://images.unsplash.com/photo-1604908177093-7d6b77a84f38"},
+{name:"تونة",img:"https://images.unsplash.com/photo-1617196037759-39b3e3d02d9d"},
+{name:"جبنة قريش",img:"https://images.unsplash.com/photo-1612198790700-0ff61f04c7f2"},
+{name:"زبادي",img:"https://images.unsplash.com/photo-1600788907416-456578634209"}
+],
+veganBulk:[
+{name:"عدس",img:"https://images.unsplash.com/photo-1605475128023-5d94f6b4b5d5"},
+{name:"رز + فاصوليا",img:"https://images.unsplash.com/photo-1604908553987-3d31b0a9a2c2"},
+{name:"بطاطا",img:"https://images.unsplash.com/photo-1589927986089-35812388d1b4"}
+],
+veganCut:[
+{name:"سلطة خضراء",img:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c"},
+{name:"خضار سوتيه",img:"https://images.unsplash.com/photo-1506084868230-bb9d95c24759"}
+],
+ramadanBulk:[
+{name:"تمر + لبن",img:"https://images.unsplash.com/photo-1622482188735-d6b3f60e8b51"},
+{name:"رز + فراخ",img:"https://images.unsplash.com/photo-1604908177522-0408fbdc7a3d"},
+{name:"شوربة عدس",img:"https://images.unsplash.com/photo-1605475128023-5d94f6b4b5d5"}
+],
+ramadanCut:[
+{name:"شوربة خضار",img:"https://images.unsplash.com/photo-1506084868230-bb9d95c24759"},
+{name:"فراخ مشوية",img:"https://images.unsplash.com/photo-1604908177093-7d6b77a84f38"}
+]
+};
+
+/* اختيار بدون تكرار في اليوم */
+function pick(arr, used){
+let f;
+do{
+f = arr[Math.floor(Math.random()*arr.length)];
+}while(used.includes(f.name));
+used.push(f.name);
+return f;
 }
 
-/* توليد الخطة */
 function startPlan(type){
+let html = `<h4 class="text-center mb-3">🔥 السعرات اليومية: ${caloriesMap[type]}</h4>`;
 
-let data=foodData[type];
-
-let html=`<h3 class="text-center">🔥 السعرات اليومية: ${calories(type)}</h3>`;
-
-for(let day=1; day<=30; day++){
-
-let b=pick(data.breakfast);
-let s1=pick(data.snack);
-let l=pick(data.lunch);
-let s2=pick(data.snack);
-let d=pick(data.dinner);
+for(let d=1; d<=30; d++){
+let used=[];
+let breakfast=pick(foods[type],used);
+let snack1=pick(foods[type],used);
+let lunch=pick(foods[type],used);
+let snack2=pick(foods[type],used);
+let dinner=pick(foods[type],used);
 
 html+=`
 <div class="day-box">
-
-<h5>اليوم ${day}</h5>
-
-<div class="food"><img src="${b.img}"><span>🍳 فطار : ${b.name}</span></div>
-<div class="food"><img src="${s1.img}"><span>🥜 سناك : ${s1.name}</span></div>
-<div class="food"><img src="${l.img}"><span>🍛 غداء : ${l.name}</span></div>
-<div class="food"><img src="${s2.img}"><span>🥤 سناك : ${s2.name}</span></div>
-<div class="food"><img src="${d.img}"><span>🌙 عشاء : ${d.name}</span></div>
-
-</div>
-`;
+<h5>اليوم ${d}</h5>
+<div class="food"><img src="${breakfast.img}"><b>إفطار:</b> ${breakfast.name}</div>
+<div class="food"><img src="${snack1.img}"><b>سناك:</b> ${snack1.name}</div>
+<div class="food"><img src="${lunch.img}"><b>غدا:</b> ${lunch.name}</div>
+<div class="food"><img src="${snack2.img}"><b>سناك:</b> ${snack2.name}</div>
+<div class="food"><img src="${dinner.img}"><b>عشا:</b> ${dinner.name}</div>
+</div>`;
 }
 
+localStorage.setItem("monthlyPlan",html);
 document.getElementById("result").innerHTML=html;
-localStorage.setItem("plan",html);
 }
 
 /* تحميل الخطة */
 window.onload=()=>{
-let saved=localStorage.getItem("plan");
+let saved=localStorage.getItem("monthlyPlan");
 if(saved) document.getElementById("result").innerHTML=saved;
-}
-
+};
 </script>
 
 </body>
