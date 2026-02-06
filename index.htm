@@ -106,6 +106,15 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
+        .meal-card {
+            transition: all 0.3s ease;
+        }
+        
+        .meal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-cairo">
@@ -271,7 +280,7 @@
                                     </div>
                                 </div>
                                 
-                                <div class="space-y-2 md:col-span-2">
+                                <div class="space-y-2">
                                     <label class="block text-gray-700 font-medium">الهدف الرئيسي</label>
                                     <select id="goal" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
                                         <option value="cutting">تنشيف وحرق الدهون</option>
@@ -281,7 +290,7 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="block text-gray-700 font-medium">نظام التمارين المفضل</label>
+                                    <label class="block text-gray-700 font-medium">نظام التمارين</label>
                                     <select id="workoutSystem" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
                                         <option value="bro_split">برو سبلت (عضلة واحدة في اليوم)</option>
                                         <option value="push_pull_legs">بوش بول ليج (دفع-سحب-أرجل)</option>
@@ -305,17 +314,6 @@
                                     <select id="planType" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
                                         <option value="normal">أيام عادية</option>
                                         <option value="ramadan">شهر رمضان</option>
-                                    </select>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <label class="block text-gray-700 font-medium">مستوى النشاط</label>
-                                    <select id="activity" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
-                                        <option value="1.2">قليل النشاط (مكاتب)</option>
-                                        <option value="1.375">خفيف النشاط (1-3 أيام أسبوعياً)</option>
-                                        <option value="1.55" selected>متوسط النشاط (3-5 أيام أسبوعياً)</option>
-                                        <option value="1.725">نشيط (6-7 أيام أسبوعياً)</option>
-                                        <option value="1.9">نشيط جداً (رياضي محترف)</option>
                                     </select>
                                 </div>
                             </div>
@@ -359,7 +357,7 @@
                         <div class="flex flex-col md:flex-row justify-between items-center">
                             <div>
                                 <h3 class="text-2xl font-bold text-dark mb-2">جدول الوجبات الأسبوعي</h3>
-                                <div class="flex items-center space-x-4 space-x-reverse mt-2">
+                                <div class="flex flex-wrap items-center gap-2 mt-2">
                                     <span class="px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium" id="planTypeDisplay">-</span>
                                     <span class="px-4 py-1 bg-secondary/10 text-secondary rounded-full text-sm font-medium" id="goalDisplay">-</span>
                                     <span class="px-4 py-1 bg-accent/10 text-accent rounded-full text-sm font-medium" id="ai-badge">🤖 الذكاء الاصطناعي</span>
@@ -393,50 +391,38 @@
             <!-- Workout Plans Page -->
             <section id="workout-page" class="page">
                 <div class="text-center mb-10">
-                    <h2 class="text-3xl font-bold text-dark mb-4">برامج التمارين المتخصصة</h2>
-                    <p class="text-gray-600 max-w-2xl mx-auto">اختر نظام التمارين المناسب لك (مولد بالذكاء الاصطناعي)</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                    <button data-system="bro_split" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
-                        <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                            <i class="fas fa-dumbbell text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-dark mb-2">برو سبلت</h3>
-                        <p class="text-gray-600 text-sm">عضلة واحدة في اليوم</p>
-                    </button>
-                    
-                    <button data-system="push_pull_legs" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
-                        <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                            <i class="fas fa-exchange-alt text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-dark mb-2">بوش بول ليج</h3>
-                        <p class="text-gray-600 text-sm">دفع - سحب - أرجل</p>
-                    </button>
-                    
-                    <button data-system="arnold_split" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
-                        <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                            <i class="fas fa-trophy text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-dark mb-2">أرنولد سبلت</h3>
-                        <p class="text-gray-600 text-sm">برنامج أرنولد شوارزنيجر</p>
-                    </button>
-                    
-                    <button data-system="full_body" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
-                        <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                            <i class="fas fa-user text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-dark mb-2">تمارين كاملة</h3>
-                        <p class="text-gray-600 text-sm">تمرين كامل الجسم</p>
-                    </button>
+                    <h2 class="text-3xl font-bold text-dark mb-4">برنامج التمارين</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">برنامج تمارين مخصص بناءً على اختياراتك (مولد بالذكاء الاصطناعي)</p>
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl">
+                        <div class="flex flex-col md:flex-row justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-bold text-dark mb-2" id="workoutSystemDisplay">نظام التمارين</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1 bg-primary text-white rounded-full text-sm font-medium">
+                                        <i class="fas fa-calendar ml-1"></i> <span id="workoutDaysDisplay">-</span> أيام أسبوعياً
+                                    </span>
+                                    <span class="px-3 py-1 bg-secondary text-white rounded-full text-sm font-medium">
+                                        <i class="fas fa-bullseye ml-1"></i> <span id="workoutGoalDisplay">-</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="mt-4 md:mt-0">
+                                <button onclick="generateWorkoutPlanWithAI()" class="gradient-bg hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg">
+                                    <i class="fas fa-sync-alt ml-2"></i>
+                                    توليد جديد بالذكاء الاصطناعي
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div id="workoutPlanContent">
                         <div class="text-center py-16">
                             <div class="text-6xl mb-4">💪</div>
-                            <p class="text-gray-500 text-lg">اختر نظام التمارين أعلاه لعرض برنامجك (مولد بالذكاء الاصطناعي)</p>
-                            <p class="text-gray-400 mt-2">يجب إدخال بياناتك في صفحة الحاسبة أولاً</p>
+                            <p class="text-gray-500 text-lg">برنامج التمارين سيظهر هنا بعد إدخال بياناتك</p>
+                            <p class="text-gray-400 mt-2">يتم توليد البرنامج تلقائياً بناءً على اختياراتك في صفحة الحاسبة</p>
                         </div>
                     </div>
                 </div>
@@ -461,14 +447,13 @@
     </div>
     
     <script>
-        // API Configuration - استخدم هذا API Key
+        // API Configuration
         const DEEPSEEK_API_KEY = "sk-ab32e91009014e1fa3c0d43d0f2813bd";
         const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
 
         // Application State
         let currentWeek = 1;
         let userData = null;
-        let currentWorkoutSystem = null;
         let currentUser = null;
 
         // Initialize
@@ -479,13 +464,11 @@
 
         async function setupFirebaseAuth() {
             try {
-                // Wait for Firebase to be available
                 if (!window.firebaseOnAuthStateChanged) {
                     setTimeout(setupFirebaseAuth, 100);
                     return;
                 }
 
-                // Monitor auth state changes
                 window.firebaseOnAuthStateChanged(window.firebaseAuth, (user) => {
                     if (user) {
                         currentUser = user;
@@ -495,7 +478,6 @@
                     }
                 });
 
-                // Set up auth form toggles
                 document.getElementById('show-register')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     document.getElementById('login-form').classList.add('hidden');
@@ -508,13 +490,8 @@
                     document.getElementById('login-form').classList.remove('hidden');
                 });
 
-                // Login handler
                 document.getElementById('login-btn')?.addEventListener('click', handleLogin);
-
-                // Register handler
                 document.getElementById('register-btn')?.addEventListener('click', handleRegister);
-
-                // Logout handler
                 document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 
             } catch (error) {
@@ -577,7 +554,6 @@
             try {
                 const userCredential = await window.firebaseCreateUser(window.firebaseAuth, email, password);
                 
-                // Save user profile in Firestore
                 await window.firebaseSetDoc(
                     window.firebaseDoc(window.firebaseDb, "users", userCredential.user.uid),
                     {
@@ -650,27 +626,6 @@
                 });
             }
             
-            // Workout system buttons
-            document.querySelectorAll(".workout-system-btn").forEach(button => {
-                button.addEventListener("click", function() {
-                    const system = this.getAttribute("data-system");
-                    currentWorkoutSystem = system;
-                    
-                    // Update active button
-                    document.querySelectorAll(".workout-system-btn").forEach(btn => {
-                        btn.classList.remove("border-primary");
-                    });
-                    this.classList.add("border-primary");
-                    
-                    if (userData) {
-                        generateWorkoutPlanWithAI(system);
-                    } else {
-                        showNotification("يجب إدخال بياناتك أولاً في صفحة الحاسبة", "error");
-                        switchPage('calculator');
-                    }
-                });
-            });
-            
             // Week navigation
             const prevWeekBtn = document.getElementById("prevWeek");
             const nextWeekBtn = document.getElementById("nextWeek");
@@ -706,7 +661,6 @@
             const workoutSystem = document.getElementById("workoutSystem").value;
             const workoutDays = document.getElementById("workoutDays").value;
             const planType = document.getElementById("planType").value;
-            const activity = parseFloat(document.getElementById("activity").value);
             
             // Validation
             if (!weight || !height || !age) {
@@ -720,6 +674,9 @@
             submitBtn.disabled = true;
             
             try {
+                // Calculate activity level based on workout days
+                const activityLevel = calculateActivityLevel(parseInt(workoutDays));
+                
                 // Prepare prompt for AI
                 const prompt = `
                     مستخدم يريد حساب احتياجاته الغذائية بناء على هذه البيانات:
@@ -727,34 +684,48 @@
                     - الطول: ${height} سم
                     - العمر: ${age} سنة
                     - الجنس: ${gender === 'male' ? 'ذكر' : 'أنثى'}
-                    - الهدف: ${goal === 'cutting' ? 'تنشيف وحرق الدهون' : goal === 'bulking' ? 'تضخيم وبناء العضلات' : 'المحافظة والتحسين'}
-                    - نظام التمارين: ${workoutSystem}
+                    - الهدف: ${getGoalText(goal)}
+                    - نظام التمارين: ${getWorkoutSystemText(workoutSystem)}
                     - أيام التمرين: ${workoutDays} يوم أسبوعياً
                     - نوع الخطة: ${planType === 'ramadan' ? 'رمضان' : 'عادي'}
-                    - مستوى النشاط: ${activity}
                     
                     أريد منك:
                     1. حساب BMR (معدل الأيض الأساسي)
-                    2. حساب TDEE (إجمالي الإنفاق اليومي للطاقة)
+                    2. حساب TDEE (إجمالي الإنفاق اليومي للطاقة) مع مراعاة مستوى النشاط بناءً على أيام التمرين
                     3. حساب السعرات الحرارية اليومية المطلوبة بناء على الهدف
                     4. توزيع الماكروز (بروتين، كربوهيدرات، دهون) بالجرامات
+                    5. تقديم نصيحة مختصرة بالعربية
                     
-                    أرجو الرد بتنسيق JSON يحتوي على:
+                    أرجو الرد بتنسيق JSON فقط بدون أي نص إضافي:
                     {
-                        "calories": عدد السعرات اليومية,
-                        "protein": جرامات البروتين,
-                        "carbs": جرامات الكربوهيدرات,
-                        "fat": جرامات الدهون,
-                        "tdee": قيمة TDEE,
-                        "bmr": قيمة BMR,
-                        "recommendations": نصيحة مختصرة بالعربية
+                        "calories": عدد صحيح,
+                        "protein": عدد صحيح,
+                        "carbs": عدد صحيح,
+                        "fat": عدد صحيح,
+                        "tdee": عدد صحيح,
+                        "bmr": عدد صحيح,
+                        "recommendations": "نصيحة مختصرة"
                     }
                 `;
 
                 const response = await callDeepSeekAPI(prompt);
+                console.log("AI Response:", response);
                 
                 // Parse AI response
-                const aiData = JSON.parse(response);
+                let aiData;
+                try {
+                    // Try to extract JSON from response
+                    const jsonMatch = response.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        aiData = JSON.parse(jsonMatch[0]);
+                    } else {
+                        aiData = JSON.parse(response);
+                    }
+                } catch (parseError) {
+                    console.error("JSON Parse Error:", parseError);
+                    // Fallback to manual calculation
+                    throw new Error("فشل في تحليل استجابة الذكاء الاصطناعي");
+                }
                 
                 // Save user data
                 userData = {
@@ -766,14 +737,13 @@
                     workoutSystem: workoutSystem,
                     workoutDays: workoutDays,
                     planType: planType,
-                    activity: activity,
-                    calories: aiData.calories,
-                    protein: aiData.protein,
-                    carbs: aiData.carbs,
-                    fat: aiData.fat,
-                    tdee: aiData.tdee,
-                    bmr: aiData.bmr,
-                    recommendations: aiData.recommendations
+                    calories: parseInt(aiData.calories),
+                    protein: parseInt(aiData.protein),
+                    carbs: parseInt(aiData.carbs),
+                    fat: parseInt(aiData.fat),
+                    tdee: parseInt(aiData.tdee),
+                    bmr: parseInt(aiData.bmr),
+                    recommendations: aiData.recommendations || "تناول غذاء متوازن ومارس الرياضة بانتظام"
                 };
 
                 // Display results
@@ -781,13 +751,17 @@
                 
                 // Save to Firestore if user is logged in
                 if (currentUser) {
-                    await window.firebaseSetDoc(
-                        window.firebaseDoc(window.firebaseDb, "userCalculations", currentUser.uid),
-                        {
-                            ...userData,
-                            timestamp: new Date().toISOString()
-                        }
-                    );
+                    try {
+                        await window.firebaseSetDoc(
+                            window.firebaseDoc(window.firebaseDb, "userCalculations", currentUser.uid),
+                            {
+                                ...userData,
+                                timestamp: new Date().toISOString()
+                            }
+                        );
+                    } catch (firestoreError) {
+                        console.error("Firestore save error:", firestoreError);
+                    }
                 }
                 
                 // Switch to meal plan page
@@ -800,16 +774,47 @@
                 console.error("AI Calculation error:", error);
                 showNotification("حدث خطأ في الحساب باستخدام الذكاء الاصطناعي", "error");
                 
-                // Fallback to manual calculation if AI fails
-                manualCalculation(weight, height, age, gender, goal, planType, activity);
+                // Fallback to manual calculation
+                manualCalculation(weight, height, age, gender, goal, planType, parseInt(workoutDays));
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
         }
 
-        function manualCalculation(weight, height, age, gender, goal, planType, activity) {
+        function calculateActivityLevel(workoutDays) {
+            switch(workoutDays) {
+                case 3: return 1.375; // خفيف
+                case 4: return 1.55;  // متوسط
+                case 5: return 1.725; // نشيط
+                case 6: return 1.9;   // نشيط جداً
+                default: return 1.375;
+            }
+        }
+
+        function getGoalText(goal) {
+            const goals = {
+                'cutting': 'تنشيف وحرق الدهون',
+                'bulking': 'تضخيم وبناء العضلات',
+                'maintain': 'المحافظة والتحسين'
+            };
+            return goals[goal] || goal;
+        }
+
+        function getWorkoutSystemText(system) {
+            const systems = {
+                'bro_split': 'برو سبلت (عضلة واحدة في اليوم)',
+                'push_pull_legs': 'بوش بول ليج (دفع-سحب-أرجل)',
+                'arnold_split': 'أرنولد سبلت',
+                'full_body': 'تمارين كاملة الجسم'
+            };
+            return systems[system] || system;
+        }
+
+        function manualCalculation(weight, height, age, gender, goal, planType, workoutDays) {
             // Manual calculation as fallback
+            const activityLevel = calculateActivityLevel(workoutDays);
+            
             let bmr;
             if (gender === "male") {
                 bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
@@ -817,7 +822,7 @@
                 bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
             }
             
-            let tdee = bmr * activity;
+            let tdee = Math.round(bmr * activityLevel);
             let calorieTarget, proteinMultiplier;
             
             switch(goal) {
@@ -848,14 +853,16 @@
                 age: age,
                 gender: gender,
                 goal: goal,
+                workoutSystem: document.getElementById("workoutSystem").value,
+                workoutDays: workoutDays,
                 planType: planType,
                 calories: Math.round(calorieTarget),
                 protein: proteinGrams,
                 carbs: carbGrams,
                 fat: fatGrams,
-                tdee: Math.round(tdee),
+                tdee: tdee,
                 bmr: Math.round(bmr),
-                recommendations: "استخدم الحساب الآلي للنتائج الأكثر دقة"
+                recommendations: "تناول غذاء متوازن يحتوي على البروتين والكربوهيدرات المعقدة والدهون الصحية. مارس الرياضة بانتظام وحافظ على رطوبة الجسم."
             };
             
             displayNutritionResults(userData);
@@ -894,19 +901,20 @@
                     - البروتين: ${userData.protein} جرام
                     - الكربوهيدرات: ${userData.carbs} جرام
                     - الدهون: ${userData.fat} جرام
-                    - الهدف: ${userData.goal === 'cutting' ? 'تنشيف' : userData.goal === 'bulking' ? 'تضخيم' : 'محافظة'}
+                    - الهدف: ${getGoalText(userData.goal)}
                     - نوع الخطة: ${userData.planType === 'ramadan' ? 'رمضان' : 'عادي'}
                     - الأسبوع: ${currentWeek} من 4 أسابيع
                     
                     المتطلبات:
                     1. لكل يوم: فطور، غداء، عشاء، ووجبتين خفيفتين
                     2. للصيام (رمضان): إفطار، سحور، ووجبتين بينهما
-                    3. ذكر الكميات المقترحة
-                    4. التنوع وعدم التكرار
-                    5. أطباق عربية صحية
+                    3. ذكر الكميات المقترحة بالجرامات
+                    4. التنوع وعدم التكرار بين الأيام
+                    5. أطباق عربية صحية ومناسبة
                     6. توزيع الماكروز على الوجبات
+                    7. أضف معلومات التغذية لكل وجبة
                     
-                    أرجو الرد بتنسيق HTML عربي مع تنسيق جميل.
+                    أرجو الرد بتنسيق HTML جميل ومنظم بالعربية.
                 `;
 
                 const response = await callDeepSeekAPI(prompt);
@@ -920,18 +928,33 @@
                     <div class="text-center py-12">
                         <div class="text-6xl mb-4">😕</div>
                         <p class="text-gray-600 text-lg">حدث خطأ في إنشاء خطة التغذية</p>
-                        <button onclick="generateMealPlanWithAI()" class="mt-6 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
-                            إعادة المحاولة
+                        <p class="text-gray-400 text-sm mb-4">${error.message || "يرجى المحاولة مرة أخرى"}</p>
+                        <button onclick="generateMealPlanWithAI()" class="mt-4 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
+                            <i class="fas fa-redo ml-2"></i> إعادة المحاولة
                         </button>
                     </div>
                 `;
             }
         }
 
-        async function generateWorkoutPlanWithAI(system) {
+        async function generateWorkoutPlanWithAI() {
             if (!userData) return;
             
             const workoutPlanContent = document.getElementById("workoutPlanContent");
+            const workoutSystemDisplay = document.getElementById("workoutSystemDisplay");
+            const workoutDaysDisplay = document.getElementById("workoutDaysDisplay");
+            const workoutGoalDisplay = document.getElementById("workoutGoalDisplay");
+            
+            // Update displays
+            if (workoutSystemDisplay) {
+                workoutSystemDisplay.textContent = getWorkoutSystemText(userData.workoutSystem);
+            }
+            if (workoutDaysDisplay) {
+                workoutDaysDisplay.textContent = userData.workoutDays;
+            }
+            if (workoutGoalDisplay) {
+                workoutGoalDisplay.textContent = getGoalText(userData.goal);
+            }
             
             // Show loading
             workoutPlanContent.innerHTML = `
@@ -942,31 +965,26 @@
             `;
             
             try {
-                const systemName = {
-                    'bro_split': 'برو سبلت (عضلة واحدة في اليوم)',
-                    'push_pull_legs': 'بوش بول ليج (دفع-سحب-أرجل)',
-                    'arnold_split': 'أرنولد سبلت',
-                    'full_body': 'تمارين كاملة الجسم'
-                }[system];
-
                 const prompt = `
-                    أريد برنامج تمارين ${systemName} باللغة العربية للمستخدم مع هذه البيانات:
+                    أريد برنامج تمارين ${getWorkoutSystemText(userData.workoutSystem)} باللغة العربية للمستخدم مع هذه البيانات:
                     - الوزن: ${userData.weight} كجم
-                    - الهدف: ${userData.goal === 'cutting' ? 'تنشيف' : userData.goal === 'bulking' ? 'تضخيم' : 'محافظة'}
-                    - مستوى النشاط: ${userData.activity}
+                    - الهدف: ${getGoalText(userData.goal)}
                     - أيام التمرين أسبوعياً: ${userData.workoutDays} أيام
-                    - نظام التمارين: ${systemName}
+                    - نظام التمارين: ${getWorkoutSystemText(userData.workoutSystem)}
+                    - السعرات اليومية: ${userData.calories}
+                    - البروتين اليومي: ${userData.protein} جرام
                     
                     المتطلبات:
-                    1. جدول أسبوعي كامل
-                    2. لكل يوم: التمارين، المجموعات، التكرارات، الراحة
-                    3. إرشادات التمرين الصحيح
-                    4. نصائح للاستشفاء
-                    5. تمارين مناسبة للمبتدئين والمتقدمين
-                    6. تضمين تمارين الكارديو إذا كان الهدف تنشيف
-                    7. استخدام أسماء التمارين بالعربية مع الشرح
+                    1. جدول أسبوعي كامل مع تقسيم الأيام
+                    2. لكل يوم: قائمة بالتمارين الرئيسية والمساعدة
+                    3. لكل تمرين: عدد المجموعات، عدد التكرارات، وقت الراحة
+                    4. إرشادات للتكنيك الصحيح لكل تمرين
+                    5. نصائح للاستشفاء والتغذية بعد التمرين
+                    6. تمارين إحماء وتهدئة
+                    7. تضمين تمارين الكارديو إذا كان الهدف تنشيف
+                    8. استخدام أسماء التمارين بالعربية مع الشرح المبسط
                     
-                    أرجو الرد بتنسيق HTML عربي مع تنسيق جدول جميل.
+                    أرجو الرد بتنسيق HTML جميل ومنظم بالعربية مع استخدام الألوان المناسبة.
                 `;
 
                 const response = await callDeepSeekAPI(prompt);
@@ -980,8 +998,9 @@
                     <div class="text-center py-12">
                         <div class="text-6xl mb-4">😕</div>
                         <p class="text-gray-600 text-lg">حدث خطأ في إنشاء برنامج التمارين</p>
-                        <button onclick="generateWorkoutPlanWithAI('${system}')" class="mt-6 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
-                            إعادة المحاولة
+                        <p class="text-gray-400 text-sm mb-4">${error.message || "يرجى المحاولة مرة أخرى"}</p>
+                        <button onclick="generateWorkoutPlanWithAI()" class="mt-4 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
+                            <i class="fas fa-redo ml-2"></i> إعادة المحاولة
                         </button>
                     </div>
                 `;
@@ -990,6 +1009,8 @@
 
         async function callDeepSeekAPI(prompt) {
             try {
+                console.log("Sending request to DeepSeek API...");
+                
                 const response = await fetch(DEEPSEEK_API_URL, {
                     method: 'POST',
                     headers: {
@@ -1001,7 +1022,7 @@
                         messages: [
                             {
                                 role: "system",
-                                content: "أنت مساعد لياقة بدنية وتغذية محترف. قدم إجابات مفصلة باللغة العربية مع أرقام دقيقة ونصائح عملية."
+                                content: "أنت مساعد لياقة بدنية وتغذية محترف. قدم إجابات مفصلة باللغة العربية مع أرقام دقيقة ونصائح عملية. استخدم تنسيق HTML جميل عند الطلب."
                             },
                             {
                                 role: "user",
@@ -1013,11 +1034,21 @@
                     })
                 });
 
+                console.log("Response status:", response.status);
+                
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error("API Error response:", errorText);
+                    throw new Error(`خطأ في API: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log("API Response data:", data);
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    throw new Error("استجابة API غير صحيحة");
+                }
+                
                 return data.choices[0].message.content;
                 
             } catch (error) {
@@ -1030,52 +1061,56 @@
             const resultsDiv = document.getElementById("results");
             if (!resultsDiv) return;
             
-            const goalText = data.goal === "cutting" ? "تنشيف" : data.goal === "bulking" ? "تضخيم" : "محافظة";
+            const goalText = getGoalText(data.goal);
             const planTypeText = data.planType === "ramadan" ? "رمضان" : "عادي";
+            const workoutSystemText = getWorkoutSystemText(data.workoutSystem);
             
             const resultsHTML = `
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-50 p-4 rounded-xl text-center">
+                    <div class="bg-blue-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-primary mb-2">${data.calories}</div>
                         <div class="text-gray-600">سعرة حرارية</div>
                         <div class="text-sm text-gray-500 mt-1">الهدف اليومي</div>
                     </div>
                     
-                    <div class="bg-green-50 p-4 rounded-xl text-center">
+                    <div class="bg-green-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-secondary mb-2">${data.protein} غ</div>
                         <div class="text-gray-600">بروتين</div>
                         <div class="text-sm text-gray-500 mt-1">${data.protein * 4} سعرة</div>
                     </div>
                     
-                    <div class="bg-yellow-50 p-4 rounded-xl text-center">
+                    <div class="bg-yellow-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-yellow-600 mb-2">${data.carbs} غ</div>
                         <div class="text-gray-600">كربوهيدرات</div>
                         <div class="text-sm text-gray-500 mt-1">${data.carbs * 4} سعرة</div>
                     </div>
                     
-                    <div class="bg-purple-50 p-4 rounded-xl text-center">
+                    <div class="bg-purple-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-purple-600 mb-2">${data.fat} غ</div>
                         <div class="text-gray-600">دهون</div>
                         <div class="text-sm text-gray-500 mt-1">${data.fat * 9} سعرة</div>
                     </div>
                     
-                    <div class="bg-gray-50 p-4 rounded-xl text-center">
+                    <div class="bg-gray-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-gray-700 mb-2">${data.tdee}</div>
                         <div class="text-gray-600">TDEE</div>
                         <div class="text-sm text-gray-500 mt-1">إجمالي الإنفاق</div>
                     </div>
                     
-                    <div class="bg-red-50 p-4 rounded-xl text-center">
+                    <div class="bg-red-50 p-4 rounded-xl text-center meal-card">
                         <div class="text-2xl font-bold text-red-600 mb-2">${data.bmr}</div>
                         <div class="text-gray-600">BMR</div>
                         <div class="text-sm text-gray-500 mt-1">معدل الأيض الأساسي</div>
                     </div>
                 </div>
                 
-                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-6">
-                    <h4 class="font-bold text-dark mb-4">🤖 توصيات الذكاء الاصطناعي:</h4>
-                    <p class="text-gray-700 mb-4">${data.recommendations || "تناول غذاء متوازن ومارس الرياضة بانتظام"}</p>
-                    <div class="space-y-3">
+                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-6 mb-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-robot text-primary text-xl ml-2"></i>
+                        <h4 class="font-bold text-dark">🤖 توصيات الذكاء الاصطناعي:</h4>
+                    </div>
+                    <p class="text-gray-700 mb-4">${data.recommendations}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div class="flex items-center">
                             <div class="w-2 h-2 bg-primary rounded-full ml-2"></div>
                             <span>الهدف: <span class="font-bold">${goalText}</span></span>
@@ -1088,12 +1123,16 @@
                             <div class="w-2 h-2 bg-accent rounded-full ml-2"></div>
                             <span>أيام التمرين: <span class="font-bold">${data.workoutDays} يوم أسبوعياً</span></span>
                         </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-purple-500 rounded-full ml-2"></div>
+                            <span>نظام التمارين: <span class="font-bold">${workoutSystemText}</span></span>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="text-center pt-6">
                     <button onclick="switchPage('meal-plan')" class="gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
-                        شاهد خطة التغذية <i class="fas fa-arrow-left ml-2"></i>
+                        <i class="fas fa-utensils ml-2"></i> شاهد خطة التغذية
                     </button>
                 </div>
             `;
@@ -1118,14 +1157,17 @@
                 pageElement.classList.add('active');
                 
                 // Add active class to selected nav item
-                document.querySelector(`.nav-item[data-page="${pageName}"]`).classList.add('nav-active');
+                const navItem = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+                if (navItem) {
+                    navItem.classList.add('nav-active');
+                }
                 
                 // Update content if user data exists
                 if (userData) {
                     if (pageName === 'meal-plan') {
                         generateMealPlanWithAI();
-                    } else if (pageName === 'workout' && currentWorkoutSystem) {
-                        generateWorkoutPlanWithAI(currentWorkoutSystem);
+                    } else if (pageName === 'workout') {
+                        generateWorkoutPlanWithAI();
                     }
                 }
                 
@@ -1179,7 +1221,7 @@
             }, 3000);
         }
 
-        // Make functions global for HTML onclick
+        // Make functions global
         window.switchPage = switchPage;
         window.generateWorkoutPlanWithAI = generateWorkoutPlanWithAI;
         window.generateMealPlanWithAI = generateMealPlanWithAI;
