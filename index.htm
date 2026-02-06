@@ -674,77 +674,37 @@
             submitBtn.disabled = true;
             
             try {
-                // Calculate activity level based on workout days
-                const activityLevel = calculateActivityLevel(parseInt(workoutDays));
+                // First, do manual calculation for immediate feedback
+                const manualResult = manualCalculation(weight, height, age, gender, goal, planType, parseInt(workoutDays));
                 
-                // Prepare prompt for AI
-                const prompt = `
-                    مستخدم يريد حساب احتياجاته الغذائية بناء على هذه البيانات:
-                    - الوزن: ${weight} كجم
-                    - الطول: ${height} سم
-                    - العمر: ${age} سنة
-                    - الجنس: ${gender === 'male' ? 'ذكر' : 'أنثى'}
-                    - الهدف: ${getGoalText(goal)}
-                    - نظام التمارين: ${getWorkoutSystemText(workoutSystem)}
-                    - أيام التمرين: ${workoutDays} يوم أسبوعياً
-                    - نوع الخطة: ${planType === 'ramadan' ? 'رمضان' : 'عادي'}
-                    
-                    أريد منك:
-                    1. حساب BMR (معدل الأيض الأساسي)
-                    2. حساب TDEE (إجمالي الإنفاق اليومي للطاقة) مع مراعاة مستوى النشاط بناءً على أيام التمرين
-                    3. حساب السعرات الحرارية اليومية المطلوبة بناء على الهدف
-                    4. توزيع الماكروز (بروتين، كربوهيدرات، دهون) بالجرامات
-                    5. تقديم نصيحة مختصرة بالعربية
-                    
-                    أرجو الرد بتنسيق JSON فقط بدون أي نص إضافي:
-                    {
-                        "calories": عدد صحيح,
-                        "protein": عدد صحيح,
-                        "carbs": عدد صحيح,
-                        "fat": عدد صحيح,
-                        "tdee": عدد صحيح,
-                        "bmr": عدد صحيح,
-                        "recommendations": "نصيحة مختصرة"
-                    }
-                `;
-
-                const response = await callDeepSeekAPI(prompt);
-                console.log("AI Response:", response);
-                
-                // Parse AI response
-                let aiData;
+                // Then try AI calculation
                 try {
-                    // Try to extract JSON from response
-                    const jsonMatch = response.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        aiData = JSON.parse(jsonMatch[0]);
-                    } else {
-                        aiData = JSON.parse(response);
-                    }
-                } catch (parseError) {
-                    console.error("JSON Parse Error:", parseError);
-                    // Fallback to manual calculation
-                    throw new Error("فشل في تحليل استجابة الذكاء الاصطناعي");
+                    const aiData = await getAIResults(weight, height, age, gender, goal, workoutDays, planType);
+                    
+                    userData = {
+                        weight: weight,
+                        height: height,
+                        age: age,
+                        gender: gender,
+                        goal: goal,
+                        workoutSystem: workoutSystem,
+                        workoutDays: workoutDays,
+                        planType: planType,
+                        calories: parseInt(aiData.calories) || manualResult.calories,
+                        protein: parseInt(aiData.protein) || manualResult.protein,
+                        carbs: parseInt(aiData.carbs) || manualResult.carbs,
+                        fat: parseInt(aiData.fat) || manualResult.fat,
+                        tdee: parseInt(aiData.tdee) || manualResult.tdee,
+                        bmr: parseInt(aiData.bmr) || manualResult.bmr,
+                        recommendations: aiData.recommendations || manualResult.recommendations
+                    };
+                    
+                    showNotification("✅ تم الحساب باستخدام الذكاء الاصطناعي", "success");
+                } catch (aiError) {
+                    console.log("AI failed, using manual calculation:", aiError);
+                    userData = manualResult;
+                    showNotification("⚠️ استخدام الحساب التقليدي (الذكاء الاصطناعي غير متوفر)", "info");
                 }
-                
-                // Save user data
-                userData = {
-                    weight: weight,
-                    height: height,
-                    age: age,
-                    gender: gender,
-                    goal: goal,
-                    workoutSystem: workoutSystem,
-                    workoutDays: workoutDays,
-                    planType: planType,
-                    calories: parseInt(aiData.calories),
-                    protein: parseInt(aiData.protein),
-                    carbs: parseInt(aiData.carbs),
-                    fat: parseInt(aiData.fat),
-                    tdee: parseInt(aiData.tdee),
-                    bmr: parseInt(aiData.bmr),
-                    recommendations: aiData.recommendations || "تناول غذاء متوازن ومارس الرياضة بانتظام"
-                };
 
                 // Display results
                 displayNutritionResults(userData);
@@ -767,52 +727,87 @@
                 // Switch to meal plan page
                 setTimeout(() => {
                     switchPage('meal-plan');
-                    showNotification("تم حساب احتياجاتك الغذائية بنجاح باستخدام الذكاء الاصطناعي", "success");
                 }, 500);
                 
             } catch (error) {
-                console.error("AI Calculation error:", error);
-                showNotification("حدث خطأ في الحساب باستخدام الذكاء الاصطناعي", "error");
-                
-                // Fallback to manual calculation
-                manualCalculation(weight, height, age, gender, goal, planType, parseInt(workoutDays));
+                console.error("Calculation error:", error);
+                showNotification("حدث خطأ في الحساب", "error");
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
         }
 
+        async function getAIResults(weight, height, age, gender, goal, workoutDays, planType) {
+            const activityLevel = calculateActivityLevel(parseInt(workoutDays));
+            const genderText = gender === 'male' ? 'ذكر' : 'أنثى';
+            const goalText = getGoalText(goal);
+            const planTypeText = planType === 'ramadan' ? 'رمضان' : 'عادي';
+            
+            const prompt = `مستخدم بياناته:
+الوزن: ${weight} كجم
+الطول: ${height} سم
+العمر: ${age} سنة
+الجنس: ${genderText}
+الهدف: ${goalText}
+أيام التمرين أسبوعياً: ${workoutDays} أيام
+نوع الخطة: ${planTypeText}
+
+أريد:
+1. حساب BMR (معدل الأيض الأساسي)
+2. حساب TDEE (مع مراعاة النشاط: ${activityLevel})
+3. السعرات اليومية المناسبة للهدف
+4. توزيع الماكروز (بروتين، كربوهيدرات، دهون) بالجرامات
+
+أعطني الإجابة بتنسيق JSON فقط:
+{
+    "calories": الرقم,
+    "protein": الرقم,
+    "carbs": الرقم,
+    "fat": الرقم,
+    "tdee": الرقم,
+    "bmr": الرقم,
+    "recommendations": "نصيحة مختصرة بالعربية"
+}`;
+
+            const response = await callDeepSeekAPI(prompt);
+            
+            // Try to parse JSON response
+            try {
+                const jsonMatch = response.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+                return JSON.parse(response);
+            } catch (e) {
+                // If not valid JSON, extract numbers from text
+                const numbers = response.match(/\d+/g);
+                if (numbers && numbers.length >= 6) {
+                    return {
+                        calories: parseInt(numbers[0]),
+                        protein: parseInt(numbers[1]),
+                        carbs: parseInt(numbers[2]),
+                        fat: parseInt(numbers[3]),
+                        tdee: parseInt(numbers[4]),
+                        bmr: parseInt(numbers[5]),
+                        recommendations: "استمتع برحلتك الصحية"
+                    };
+                }
+                throw new Error("لا يمكن تحليل استجابة الذكاء الاصطناعي");
+            }
+        }
+
         function calculateActivityLevel(workoutDays) {
             switch(workoutDays) {
-                case 3: return 1.375; // خفيف
-                case 4: return 1.55;  // متوسط
-                case 5: return 1.725; // نشيط
-                case 6: return 1.9;   // نشيط جداً
+                case 3: return 1.375;
+                case 4: return 1.55;
+                case 5: return 1.725;
+                case 6: return 1.9;
                 default: return 1.375;
             }
         }
 
-        function getGoalText(goal) {
-            const goals = {
-                'cutting': 'تنشيف وحرق الدهون',
-                'bulking': 'تضخيم وبناء العضلات',
-                'maintain': 'المحافظة والتحسين'
-            };
-            return goals[goal] || goal;
-        }
-
-        function getWorkoutSystemText(system) {
-            const systems = {
-                'bro_split': 'برو سبلت (عضلة واحدة في اليوم)',
-                'push_pull_legs': 'بوش بول ليج (دفع-سحب-أرجل)',
-                'arnold_split': 'أرنولد سبلت',
-                'full_body': 'تمارين كاملة الجسم'
-            };
-            return systems[system] || system;
-        }
-
         function manualCalculation(weight, height, age, gender, goal, planType, workoutDays) {
-            // Manual calculation as fallback
             const activityLevel = calculateActivityLevel(workoutDays);
             
             let bmr;
@@ -847,25 +842,15 @@
             const fatGrams = Math.round((calorieTarget * 0.25) / 9);
             const carbGrams = Math.round((calorieTarget - (proteinGrams * 4) - (fatGrams * 9)) / 4);
             
-            userData = {
-                weight: weight,
-                height: height,
-                age: age,
-                gender: gender,
-                goal: goal,
-                workoutSystem: document.getElementById("workoutSystem").value,
-                workoutDays: workoutDays,
-                planType: planType,
+            return {
                 calories: Math.round(calorieTarget),
                 protein: proteinGrams,
                 carbs: carbGrams,
                 fat: fatGrams,
                 tdee: tdee,
                 bmr: Math.round(bmr),
-                recommendations: "تناول غذاء متوازن يحتوي على البروتين والكربوهيدرات المعقدة والدهون الصحية. مارس الرياضة بانتظام وحافظ على رطوبة الجسم."
+                recommendations: `تناول ${Math.round(calorieTarget)} سعرة يومياً، مع ${proteinGrams}غ بروتين، ${carbGrams}غ كربوهيدرات، ${fatGrams}غ دهون. مارس الرياضة بانتظام واشرب الماء بكثرة.`
             };
-            
-            displayNutritionResults(userData);
         }
 
         async function generateMealPlanWithAI() {
@@ -895,35 +880,98 @@
             updateWeekDisplay();
             
             try {
-                const prompt = `
-                    أريد خطة تغذية أسبوعية (7 أيام) باللغة العربية للمستخدم مع هذه البيانات:
-                    - السعرات اليومية: ${userData.calories}
-                    - البروتين: ${userData.protein} جرام
-                    - الكربوهيدرات: ${userData.carbs} جرام
-                    - الدهون: ${userData.fat} جرام
-                    - الهدف: ${getGoalText(userData.goal)}
-                    - نوع الخطة: ${userData.planType === 'ramadan' ? 'رمضان' : 'عادي'}
-                    - الأسبوع: ${currentWeek} من 4 أسابيع
-                    
-                    المتطلبات:
-                    1. لكل يوم: فطور، غداء، عشاء، ووجبتين خفيفتين
-                    2. للصيام (رمضان): إفطار، سحور، ووجبتين بينهما
-                    3. ذكر الكميات المقترحة بالجرامات
-                    4. التنوع وعدم التكرار بين الأيام
-                    5. أطباق عربية صحية ومناسبة
-                    6. توزيع الماكروز على الوجبات
-                    7. أضف معلومات التغذية لكل وجبة
-                    
-                    أرجو الرد بتنسيق HTML جميل ومنظم بالعربية.
-                `;
-
-                const response = await callDeepSeekAPI(prompt);
+                const days = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+                const isRamadan = userData.planType === "ramadan";
                 
-                // Display the meal plan
-                mealPlanContent.innerHTML = response;
+                let weeklyPlan = "";
+                
+                for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                    const dayPrompt = isRamadan ? 
+                        `أنشئ خطة وجبات ليوم ${days[dayIndex]} في رمضان:
+                         الهدف: ${getGoalText(userData.goal)}
+                         السعرات: ${userData.calories}
+                         البروتين: ${userData.protein}غ
+                         الكربوهيدرات: ${userData.carbs}غ
+                         الدهون: ${userData.fat}غ
+                         
+                         أريد:
+                         1. وجبة إفطار (بعد المغرب)
+                         2. وجبة سحور
+                         3. وجبتين خفيفتين بين الإفطار والسحور
+                         4. التوزيع الغذائي لكل وجبة` :
+                         
+                        `أنشئ خطة وجبات ليوم ${days[dayIndex]}:
+                         الهدف: ${getGoalText(userData.goal)}
+                         السعرات: ${userData.calories}
+                         البروتين: ${userData.protein}غ
+                         الكربوهيدرات: ${userData.carbs}غ
+                         الدهون: ${userData.fat}غ
+                         
+                         أريد:
+                         1. وجبة فطور
+                         2. وجبة غداء
+                         3. وجبة عشاء
+                         4. وجبتين خفيفتين
+                         5. التوزيع الغذائي لكل وجبة`;
+                    
+                    try {
+                        const dayPlan = await callDeepSeekAPI(dayPrompt);
+                        weeklyPlan += `
+                            <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+                                <h4 class="text-xl font-bold text-dark mb-4 pb-3 border-b border-gray-200">${days[dayIndex]} - الأسبوع ${currentWeek}</h4>
+                                <div class="prose prose-lg max-w-none">
+                                    ${formatAIResponse(dayPlan)}
+                                </div>
+                            </div>
+                        `;
+                    } catch (error) {
+                        weeklyPlan += `
+                            <div class="bg-gray-50 rounded-2xl p-6 mb-6">
+                                <h4 class="text-xl font-bold text-dark mb-4 pb-3 border-b border-gray-200">${days[dayIndex]} - الأسبوع ${currentWeek}</h4>
+                                <div class="bg-yellow-50 p-4 rounded-lg mb-4">
+                                    <p class="text-yellow-800">⚠️ تعذر توليد خطة اليوم بالذكاء الاصطناعي</p>
+                                    <p class="text-gray-600 mt-2">استخدم خطة بديلة:</p>
+                                    ${generateBackupMealPlan(dayIndex, isRamadan)}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                mealPlanContent.innerHTML = `
+                    <div class="space-y-6">
+                        ${weeklyPlan}
+                        <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6">
+                            <h4 class="font-bold text-dark mb-4">📝 نصائح الأسبوع ${currentWeek}:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-bold text-gray-800 mb-3">🥦 نصائح غذائية:</h5>
+                                    <ul class="space-y-2 text-gray-700">
+                                        <li>• اشرب 3-4 لتر ماء يومياً</li>
+                                        <li>• تناول الخضروات مع كل وجبة</li>
+                                        <li>• تجنب السكريات المضافة</li>
+                                        <li>• تناول البروتين مع كل وجبة</li>
+                                        ${isRamadan ? '<li>• استمر في شرب الماء بين الإفطار والسحور</li>' : ''}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="font-bold text-gray-800 mb-3">🎯 حسب هدفك:</h5>
+                                    <ul class="space-y-2 text-gray-700">
+                                        ${userData.goal === 'cutting' ? 
+                                            '<li>• قلل الكربوهيدرات المساء</li><li>• امش 30 دقيقة يومياً</li><li>• ركز على البروتين</li>' :
+                                          userData.goal === 'bulking' ?
+                                            '<li>• زد الكربوهيدرات بعد التمرين</li><li>• تناول وجبة قبل النوم</li><li>• ركز على تمارين القوة</li>' :
+                                            '<li>• حافظ على توازن الوجبات</li><li>• مارس الرياضة بانتظام</li><li>• تابع وزنك أسبوعياً</li>'
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 
             } catch (error) {
-                console.error("AI Meal Plan error:", error);
+                console.error("Meal plan generation error:", error);
                 mealPlanContent.innerHTML = `
                     <div class="text-center py-12">
                         <div class="text-6xl mb-4">😕</div>
@@ -932,6 +980,62 @@
                         <button onclick="generateMealPlanWithAI()" class="mt-4 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
                             <i class="fas fa-redo ml-2"></i> إعادة المحاولة
                         </button>
+                    </div>
+                `;
+            }
+        }
+
+        function generateBackupMealPlan(dayIndex, isRamadan) {
+            const meals = {
+                breakfast: ["شوفان مع حليب وموز", "عجة بيض مع خضار", "سموذي بروتين بالتمر", "خبز توست مع أفوكادو", "لبن يوناني مع توت", "فول مدمس مع زيت زيتون", "بان كيك بروتين"],
+                lunch: ["صدر دجاج مشوي مع أرز بني", "سمك سلمون مع بطاطا حلوة", "لحم بقري مع خضار سوتيه", "برجر دجاج مع سلطة", "معكرونة مع دجاج و صلصة", "كوسة محشية باللحم", "شوربة عدس مع خبز"],
+                dinner: ["سلطة تونة مع خضار", "أومليت بيض مع جبن", "سلمون مع بروكلي", "شوربة خضار مع دجاج", "زبادي يوناني مع مكسرات", "سندويش تونة مع خس", "بيض مسلوق مع أفوكادو"],
+                snacks: ["تفاحة مع زبدة فول سوداني", "مكسرات مشكلة", "بروتين شيك", "جبنة قريش", "حبات تمر", "خيار وجزر", "شوكولاتة داكنة"]
+            };
+            
+            if (isRamadan) {
+                return `
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-green-700 mb-2">🍽️ الإفطار:</h6>
+                            <p>${meals.lunch[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.4)} سعرة</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-blue-700 mb-2">🌙 سحور:</h6>
+                            <p>${meals.dinner[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.3)} سعرة</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-yellow-700 mb-2">🥛 وجبتين خفيفتين:</h6>
+                            <p>${meals.snacks[dayIndex]} + ${meals.breakfast[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.3)} سعرة</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-green-700 mb-2">🌅 الفطور:</h6>
+                            <p>${meals.breakfast[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.25)} سعرة</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-blue-700 mb-2">☀️ الغداء:</h6>
+                            <p>${meals.lunch[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.35)} سعرة</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-purple-700 mb-2">🌙 العشاء:</h6>
+                            <p>${meals.dinner[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.25)} سعرة</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <h6 class="font-bold text-yellow-700 mb-2">🥛 وجبات خفيفة:</h6>
+                            <p>${meals.snacks[dayIndex]}</p>
+                            <p class="text-sm text-gray-500 mt-1">${Math.round(userData.calories * 0.15)} سعرة</p>
+                        </div>
                     </div>
                 `;
             }
@@ -965,35 +1069,59 @@
             `;
             
             try {
-                const prompt = `
-                    أريد برنامج تمارين ${getWorkoutSystemText(userData.workoutSystem)} باللغة العربية للمستخدم مع هذه البيانات:
-                    - الوزن: ${userData.weight} كجم
-                    - الهدف: ${getGoalText(userData.goal)}
-                    - أيام التمرين أسبوعياً: ${userData.workoutDays} أيام
-                    - نظام التمارين: ${getWorkoutSystemText(userData.workoutSystem)}
-                    - السعرات اليومية: ${userData.calories}
-                    - البروتين اليومي: ${userData.protein} جرام
-                    
-                    المتطلبات:
-                    1. جدول أسبوعي كامل مع تقسيم الأيام
-                    2. لكل يوم: قائمة بالتمارين الرئيسية والمساعدة
-                    3. لكل تمرين: عدد المجموعات، عدد التكرارات، وقت الراحة
-                    4. إرشادات للتكنيك الصحيح لكل تمرين
-                    5. نصائح للاستشفاء والتغذية بعد التمرين
-                    6. تمارين إحماء وتهدئة
-                    7. تضمين تمارين الكارديو إذا كان الهدف تنشيف
-                    8. استخدام أسماء التمارين بالعربية مع الشرح المبسط
-                    
-                    أرجو الرد بتنسيق HTML جميل ومنظم بالعربية مع استخدام الألوان المناسبة.
-                `;
+                const prompt = `أنشئ برنامج تمارين ${getWorkoutSystemText(userData.workoutSystem)} لـ ${userData.workoutDays} أيام أسبوعياً.
+الهدف: ${getGoalText(userData.goal)}
+الوزن: ${userData.weight} كجم
+العمر: ${userData.age} سنة
+الجنس: ${userData.gender === 'male' ? 'ذكر' : 'أنثى'}
+
+المتطلبات:
+1. جدول أسبوعي كامل
+2. لكل يوم: التمارين، المجموعات، التكرارات، الراحة
+3. إرشادات للتكنيك الصحيح
+4. نصائح للاستشفاء
+5. تمارين إحماء وتهدئة
+6. ${userData.goal === 'cutting' ? 'أضف تمارين كارديو' : 'ركز على تمارين القوة'}
+7. استخدم أسماء التمارين بالعربية
+
+قدم الإجابة بتنسيق HTML منظم وجميع.`;
 
                 const response = await callDeepSeekAPI(prompt);
                 
                 // Display the workout plan
-                workoutPlanContent.innerHTML = response;
+                workoutPlanContent.innerHTML = `
+                    <div class="space-y-8">
+                        <div class="prose prose-lg max-w-none">
+                            ${formatAIResponse(response)}
+                        </div>
+                        <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6">
+                            <h4 class="font-bold text-dark mb-4">💡 نصائح إضافية:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-bold text-gray-800 mb-3">🏋️‍♂️ نصائح التمرين:</h5>
+                                    <ul class="space-y-2 text-gray-700">
+                                        <li>• إحماء 10 دقائق قبل التمرين</li>
+                                        <li>• حافظ على الشكل الصحيح للتمارين</li>
+                                        <li>• زد الأوزان تدريجياً</li>
+                                        <li>• استرح بين المجموعات 60-90 ثانية</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 class="font-bold text-gray-800 mb-3">🍎 نصائح غذائية للتمرين:</h5>
+                                    <ul class="space-y-2 text-gray-700">
+                                        <li>• تناول وجبة بروتين قبل التمرين بساعة</li>
+                                        <li>• اشرب الماء أثناء وبعد التمرين</li>
+                                        <li>• تناول كربوهيدرات بعد التمرين</li>
+                                        <li>• نام 7-8 ساعات للاستشفاء</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 
             } catch (error) {
-                console.error("AI Workout Plan error:", error);
+                console.error("Workout plan generation error:", error);
                 workoutPlanContent.innerHTML = `
                     <div class="text-center py-12">
                         <div class="text-6xl mb-4">😕</div>
@@ -1022,7 +1150,7 @@
                         messages: [
                             {
                                 role: "system",
-                                content: "أنت مساعد لياقة بدنية وتغذية محترف. قدم إجابات مفصلة باللغة العربية مع أرقام دقيقة ونصائح عملية. استخدم تنسيق HTML جميل عند الطلب."
+                                content: "أنت خبير لياقة بدنية وتغذية. قدم إجابات مفصلة وعملية باللغة العربية. استخدم أسلوبًا واضحًا وسهل الفهم."
                             },
                             {
                                 role: "user",
@@ -1030,23 +1158,21 @@
                             }
                         ],
                         temperature: 0.7,
-                        max_tokens: 4000
+                        max_tokens: 2000
                     })
                 });
 
                 console.log("Response status:", response.status);
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("API Error response:", errorText);
-                    throw new Error(`خطأ في API: ${response.status} - ${errorText}`);
+                    throw new Error(`خطأ في الاتصال بالذكاء الاصطناعي: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log("API Response data:", data);
+                console.log("API Response received");
                 
                 if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-                    throw new Error("استجابة API غير صحيحة");
+                    throw new Error("استجابة غير صحيحة من الذكاء الاصطناعي");
                 }
                 
                 return data.choices[0].message.content;
@@ -1055,6 +1181,38 @@
                 console.error("API Call error:", error);
                 throw error;
             }
+        }
+
+        function formatAIResponse(response) {
+            // Format the AI response for better display
+            let formatted = response
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<li>$1</li>')
+                .replace(/# (.*?)(\n|$)/g, '<h3 class="text-xl font-bold mt-4 mb-2">$1</h3>')
+                .replace(/## (.*?)(\n|$)/g, '<h4 class="text-lg font-bold mt-3 mb-2">$1</h4>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            return `<div class="ai-response">${formatted}</div>`;
+        }
+
+        function getGoalText(goal) {
+            const goals = {
+                'cutting': 'تنشيف وحرق الدهون',
+                'bulking': 'تضخيم وبناء العضلات',
+                'maintain': 'المحافظة والتحسين'
+            };
+            return goals[goal] || goal;
+        }
+
+        function getWorkoutSystemText(system) {
+            const systems = {
+                'bro_split': 'برو سبلت (عضلة واحدة في اليوم)',
+                'push_pull_legs': 'بوش بول ليج (دفع-سحب-أرجل)',
+                'arnold_split': 'أرنولد سبلت',
+                'full_body': 'تمارين كاملة الجسم'
+            };
+            return systems[system] || system;
         }
 
         function displayNutritionResults(data) {
@@ -1200,9 +1358,12 @@
         }
 
         function showNotification(message, type = "info") {
+            // Remove any existing notifications
+            document.querySelectorAll('.notification').forEach(n => n.remove());
+            
             // Create notification element
             const notification = document.createElement("div");
-            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-bold transform transition-all duration-300 ${
+            notification.className = `notification fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-bold transform transition-all duration-300 ${
                 type === "success" ? "bg-gradient-to-r from-green-500 to-green-600" :
                 type === "error" ? "bg-gradient-to-r from-red-500 to-red-600" :
                 "bg-gradient-to-r from-blue-500 to-blue-600"
@@ -1214,9 +1375,12 @@
             
             // Remove after 3 seconds
             setTimeout(() => {
+                notification.style.opacity = "0";
                 notification.style.transform = "translateX(100%)";
                 setTimeout(() => {
-                    document.body.removeChild(notification);
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
                 }, 300);
             }, 3000);
         }
