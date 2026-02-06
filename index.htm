@@ -1,186 +1,141 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>تطبيق الصحة واللياقة</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<style>
-.loading { border: 4px solid #ddd; border-top-color: #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness AI Planner</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100">
 
-<div id="app" class="min-h-screen flex items-center justify-center p-4"></div>
+<div id="authSection" class="flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-md text-center">
+        <h2 class="text-2xl font-bold mb-6">تسجيل الدخول</h2>
+        <button id="googleLogin" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition">تسجيل دخول بجوجل</button>
+    </div>
+</div>
+
+<div id="mainApp" class="hidden p-6 max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">خطةك الشهرية الذكية</h1>
+    
+    <!-- بيانات المستخدم -->
+    <div id="userForm" class="bg-white p-6 rounded-xl shadow-md mb-6">
+        <h2 class="text-xl font-bold mb-4">أدخل بياناتك</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="number" id="age" placeholder="العمر" class="p-3 border rounded w-full">
+            <input type="number" id="weight" placeholder="الوزن (كجم)" class="p-3 border rounded w-full">
+            <input type="number" id="height" placeholder="الطول (سم)" class="p-3 border rounded w-full">
+            <select id="goal" class="p-3 border rounded w-full">
+                <option value="">اختر هدفك</option>
+                <option value="cutting">تنشيف</option>
+                <option value="bulking">تضخيم</option>
+                <option value="maintenance">محافظة</option>
+            </select>
+        </div>
+        <button id="generatePlan" class="mt-6 bg-blue-500 text-white px-6 py-3 rounded-xl font-bold hover:opacity-90 transition w-full">انشئ خطتك</button>
+    </div>
+
+    <!-- خطة الطعام -->
+    <div id="mealPlan" class="space-y-6"></div>
+
+    <!-- خطة التمرين -->
+    <div id="workoutPlan" class="space-y-6 mt-8"></div>
+</div>
 
 <script>
-  // =========================
-  // إعدادات Firebase
-  // =========================
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7POxxSjiEHElUMEoQ90TTlBs2WBEE18g",
-    authDomain: "fittnes-web.firebaseapp.com",
-    projectId: "fittnes-web",
-    storageBucket: "fittnes-web.firebasestorage.app",
-    messagingSenderId: "1043684216161",
-    appId: "1:1043684216161:web:7ffa29e8c215bcc480c920",
-    measurementId: "G-8BQBEPH5Z8"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+    // Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyA7POxxSjiEHElUMEoQ90TTlBs2WBEE18g",
+        authDomain: "fittnes-web.firebaseapp.com",
+        projectId: "fittnes-web",
+        storageBucket: "fittnes-web.firebasestorage.app",
+        messagingSenderId: "1043684216161",
+        appId: "1:1043684216161:web:7ffa29e8c215bcc480c920",
+        measurementId: "G-8BQBEPH5Z8"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  const appDiv = document.getElementById("app");
+    const authSection = document.getElementById("authSection");
+    const mainApp = document.getElementById("mainApp");
+    const googleLogin = document.getElementById("googleLogin");
 
-  // =========================
-  // صفحة تسجيل / دخول
-  // =========================
-  function showAuthPage() {
-    appDiv.innerHTML = `
-      <div class="max-w-md w-full bg-white p-6 rounded-xl shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-center">تسجيل الدخول / إنشاء حساب</h2>
-        <input id="nameInput" placeholder="الاسم" class="w-full p-3 mb-3 border rounded-lg" />
-        <input id="emailInput" type="email" placeholder="البريد الإلكتروني" class="w-full p-3 mb-3 border rounded-lg" />
-        <input id="passwordInput" type="password" placeholder="كلمة المرور" class="w-full p-3 mb-3 border rounded-lg" />
-        <button onclick="registerUser()" class="w-full bg-blue-500 text-white p-3 rounded-lg font-bold mb-3 hover:bg-blue-600">إنشاء حساب</button>
-        <button onclick="loginUser()" class="w-full bg-green-500 text-white p-3 rounded-lg font-bold mb-3 hover:bg-green-600">تسجيل دخول</button>
-        <hr class="my-3">
-        <button onclick="loginWithGoogle()" class="w-full bg-red-500 text-white p-3 rounded-lg font-bold hover:bg-red-600">تسجيل/دخول بـ Google</button>
-      </div>
-    `;
-  }
+    // تسجيل دخول جوجل
+    googleLogin.addEventListener("click", async () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        try {
+            await auth.signInWithPopup(provider);
+        } catch (error) {
+            alert("حدث خطأ أثناء تسجيل الدخول: " + error.message);
+        }
+    });
 
-  async function registerUser() {
-    const name = document.getElementById("nameInput").value.trim();
-    const email = document.getElementById("emailInput").value.trim();
-    const password = document.getElementById("passwordInput").value.trim();
-    if(!name || !email || !password) return alert("الرجاء ملء كل الحقول");
-    try {
-      const userCredential = await auth.createUserWithEmailAndPassword(email,password);
-      const user = userCredential.user;
-      await db.collection("users").doc(user.uid).set({name,email,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-      showUserDataForm();
-    } catch(e){ alert(e.message); }
-  }
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            authSection.classList.add("hidden");
+            mainApp.classList.remove("hidden");
+        } else {
+            authSection.classList.remove("hidden");
+            mainApp.classList.add("hidden");
+        }
+    });
 
-  async function loginUser() {
-    const email = document.getElementById("emailInput").value.trim();
-    const password = document.getElementById("passwordInput").value.trim();
-    if(!email || !password) return alert("الرجاء ملء كل الحقول");
-    try { await auth.signInWithEmailAndPassword(email,password); showUserDataForm(); } 
-    catch(e){ alert(e.message); }
-  }
+    const generatePlanBtn = document.getElementById("generatePlan");
+    generatePlanBtn.addEventListener("click", async () => {
+        const age = document.getElementById("age").value;
+        const weight = document.getElementById("weight").value;
+        const height = document.getElementById("height").value;
+        const goal = document.getElementById("goal").value;
 
-  async function loginWithGoogle() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try {
-      const result = await auth.signInWithPopup(provider);
-      const user = result.user;
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      if(!userDoc.exists) await db.collection("users").doc(user.uid).set({name:user.displayName,email:user.email,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-      showUserDataForm();
-    } catch(e){ alert(e.message); }
-  }
+        if(!age || !weight || !height || !goal){
+            alert("من فضلك املأ كل البيانات");
+            return;
+        }
 
-  // =========================
-  // إدخال بيانات المستخدم
-  // =========================
-  function showUserDataForm() {
-    const user = auth.currentUser;
-    if(!user) return showAuthPage();
-    appDiv.innerHTML = `
-      <div class="max-w-md w-full bg-white p-6 rounded-xl shadow-md">
-        <h2 class="text-2xl font-bold mb-6 text-center">أدخل بياناتك</h2>
-        <input id="weightInput" placeholder="الوزن (كجم)" class="w-full p-3 mb-3 border rounded-lg" type="number"/>
-        <input id="heightInput" placeholder="الطول (سم)" class="w-full p-3 mb-3 border rounded-lg" type="number"/>
-        <select id="goalInput" class="w-full p-3 mb-3 border rounded-lg">
-          <option value="cutting">تنشيف</option>
-          <option value="bulking">تضخيم</option>
-          <option value="maintenance">محافظة</option>
-        </select>
-        <input id="daysInput" placeholder="أيام التمرين بالأسبوع" class="w-full p-3 mb-3 border rounded-lg" type="number" min="1" max="7"/>
-        <button onclick="submitUserData()" class="w-full bg-blue-500 text-white p-3 rounded-lg font-bold hover:bg-blue-600">حفظ البيانات وتوليد الخطة</button>
-      </div>
-    `;
-  }
+        const userData = { age, weight, height, goal };
+        
+        // عرض تحميل
+        document.getElementById("mealPlan").innerHTML = `<p class="text-center py-12 text-gray-600">جاري إنشاء خطة الطعام...</p>`;
+        document.getElementById("workoutPlan").innerHTML = `<p class="text-center py-12 text-gray-600">جاري إنشاء خطة التمرين...</p>`;
 
-  async function submitUserData() {
-    const user = auth.currentUser;
-    if(!user) return showAuthPage();
-    const weight = parseFloat(document.getElementById("weightInput").value);
-    const height = parseFloat(document.getElementById("heightInput").value);
-    const goal = document.getElementById("goalInput").value;
-    const days = parseInt(document.getElementById("daysInput").value);
-    if(!weight || !height || !goal || !days) return alert("الرجاء ملء كل الحقول");
-    const userData = { weight,height,goal,days };
-    await db.collection("users").doc(user.uid).update(userData);
-    generateFullPlan(userData);
-  }
+        try {
+            // استدعاء API
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer sk-ab32e91009014e1fa3c0d43d0f2813bd"
+                },
+                body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [
+                        {role:"system", content:"انت مدرب ولياقه واطباء تغذيه."},
+                        {role:"user", content: `
+صمم خطة شهرية كاملة لشخص عمره ${age} سنة، وزنه ${weight} كجم، طوله ${height} سم، هدفه ${goal}.
+قسم الخطة لأربع أسابيع.
+لكل أسبوع أعطني:
+- خطة الوجبات اليومية مع السعرات، البروتين، الكارب، الدهون.
+- خطة التمرين اليومية لكل يوم، عدد المجموعات والتكرارات والراحة.
+- عرض الخطة أسبوع بأسبوع بشكل مرتب بالHTML مناسب للعرض مباشرة.
+` }
+                    ],
+                    max_tokens: 2000
+                })
+            });
+            
+            const data = await response.json();
+            const aiContent = data.choices[0].message.content;
 
-  // =========================
-  // توليد الخطة عبر API
-  // =========================
-  async function generateFullPlan(userData) {
-    const user = auth.currentUser;
-    if(!user) return showAuthPage();
-    appDiv.innerHTML = `
-      <div class="text-center py-12">
-        <div class="loading"></div>
-        <p class="text-gray-600 text-lg">جاري توليد خطتك الشهرية...</p>
-      </div>
-    `;
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions",{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":"Bearer sk-ab32e91009014e1fa3c0d43d0f2813bd"
-        },
-        body:JSON.stringify({
-          model:"gpt-3.5-turbo",
-          messages:[
-            { role:"system", content:"أنت مدرب لياقة وتغذية بالعربية، ارسل خطة شهرية كاملة لكل أسبوع يومياً مع وجبات، سعرات، بروتين، كربوهيدرات، دهون، وتمارين." },
-            { role:"user", content:JSON.stringify(userData) }
-          ],
-          temperature:0.7
-        })
-      });
-      const data = await response.json();
-      const planText = data.choices[0].message.content;
-      await db.collection("users").doc(user.uid).update({ plan:planText, generatedAt:firebase.firestore.FieldValue.serverTimestamp() });
-      showPlan(planText);
-    } catch(e){ alert("حدث خطأ أثناء توليد الخطة: "+e.message); }
-  }
-
-  // =========================
-  // عرض الخطة
-  // =========================
-  function showPlan(planText) {
-    appDiv.innerHTML = `
-      <div class="max-w-4xl w-full bg-white p-6 rounded-xl shadow-md overflow-auto">
-        <h2 class="text-2xl font-bold mb-4 text-center">خطتك الشهرية</h2>
-        <pre class="whitespace-pre-wrap text-gray-700">${planText}</pre>
-        <button onclick="showUserDataForm()" class="mt-4 bg-blue-500 text-white p-3 rounded-lg font-bold hover:bg-blue-600">تعديل البيانات</button>
-      </div>
-    `;
-  }
-
-  // =========================
-  // تحقق تسجيل الدخول عند فتح الصفحة
-  // =========================
-  auth.onAuthStateChanged(async (user)=>{
-    if(user){
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      const data = userDoc.data();
-      if(!data.weight || !data.height || !data.goal) showUserDataForm();
-      else if(data.plan) showPlan(data.plan);
-      else generateFullPlan({ weight:data.weight, height:data.height, goal:data.goal, days:data.days });
-    } else showAuthPage();
-  });
+            // عرض المحتوى مباشرة
+            document.getElementById("mealPlan").innerHTML = aiContent;
+            document.getElementById("workoutPlan").innerHTML = "";
+        } catch (error) {
+            document.getElementById("mealPlan").innerHTML = `<p class="text-center py-12 text-red-500">حدث خطأ في إنشاء الخطة</p>`;
+            console.error(error);
+        }
+    });
 </script>
 
 </body>
