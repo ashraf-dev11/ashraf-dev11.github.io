@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق اللياقة والتغذية المتكامل</title>
+    <meta name="description" content="تطبيق متكامل لحساب السعرات الحرارية وإنشاء خطط التغذية والتمارين">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6",
+                        secondary: "#10B981",
+                        accent: "#F59E0B",
+                        dark: "#1F2937",
+                        light: "#F9FAFB"
+                    },
+                    fontFamily: {
+                        'cairo': ['Cairo', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .nav-active {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-cairo">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 space-x-reverse mb-4 md:mb-0">
+                    <div class="bg-white p-2 rounded-full">
+                        <i class="fas fa-dumbbell text-primary text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold">تطبيق اللياقة والتغذية</h1>
+                        <p class="text-blue-100">خطط مخصصة لك</p>
+                    </div>
+                </div>
+                
+                <nav class="flex space-x-4 space-x-reverse">
+                    <a href="#" data-page="calculator" class="nav-item px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 nav-active">
+                        <i class="fas fa-calculator ml-2"></i>الحاسبة
+                    </a>
+                    <a href="#" data-page="meal-plan" class="nav-item px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200">
+                        <i class="fas fa-utensils ml-2"></i>خطة التغذية
+                    </a>
+                    <a href="#" data-page="workout" class="nav-item px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200">
+                        <i class="fas fa-dumbbell ml-2"></i>التمارين
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Calculator Page -->
+        <section id="calculator-page" class="page active">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-dark mb-4">احسب احتياجاتك اليومية</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">أدخل بياناتك الشخصية لتحصل على خطط تغذية وتمارين مخصصة</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Input Form -->
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-primary p-3 rounded-full ml-4">
+                            <i class="fas fa-user text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark">بياناتك الشخصية</h3>
+                    </div>
+                    
+                    <form id="calculatorForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">الوزن (كجم)</label>
+                                <input type="number" id="weight" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" placeholder="مثال: 75" required min="30" max="200">
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">الطول (سم)</label>
+                                <input type="number" id="height" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" placeholder="مثال: 175" required min="100" max="250">
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">العمر (سنة)</label>
+                                <input type="number" id="age" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" placeholder="مثال: 25" required min="15" max="80">
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">الجنس</label>
+                                <div class="flex space-x-4 space-x-reverse">
+                                    <label class="flex items-center space-x-2 space-x-reverse cursor-pointer">
+                                        <input type="radio" name="gender" value="male" class="text-primary" checked>
+                                        <span>ذكر</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 space-x-reverse cursor-pointer">
+                                        <input type="radio" name="gender" value="female" class="text-primary">
+                                        <span>أنثى</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="block text-gray-700 font-medium">الهدف الرئيسي</label>
+                                <select id="goal" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
+                                    <option value="cutting">تنشيف وحرق الدهون</option>
+                                    <option value="bulking">تضخيم وبناء العضلات</option>
+                                    <option value="maintain" selected>المحافظة والتحسين</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="block text-gray-700 font-medium">نظام التمارين المفضل</label>
+                                <select id="workoutSystem" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
+                                    <option value="bro_split">برو سبلت (عضلة واحدة في اليوم)</option>
+                                    <option value="push_pull_legs">بوش بول ليج (دفع-سحب-أرجل)</option>
+                                    <option value="arnold_split">أرنولد سبلت</option>
+                                    <option value="full_body">تمارين كاملة الجسم</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">مستوى التمرين</label>
+                                <select id="experience" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
+                                    <option value="beginner">مبتدئ</option>
+                                    <option value="intermediate" selected>متوسط</option>
+                                    <option value="advanced">متقدم</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">أيام التمرين أسبوعياً</label>
+                                <select id="workoutDays" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
+                                    <option value="3">3 أيام</option>
+                                    <option value="4" selected>4 أيام</option>
+                                    <option value="5">5 أيام</option>
+                                    <option value="6">6 أيام</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-gray-700 font-medium">نوع الخطة</label>
+                                <select id="planType" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200">
+                                    <option value="normal">أيام عادية</option>
+                                    <option value="ramadan">شهر رمضان</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full gradient-bg hover:opacity-90 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
+                            <i class="fas fa-check ml-2"></i>
+                            احسب واحصل على الخطة
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Results Display -->
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-secondary p-3 rounded-full ml-4">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-dark">نتائج الحساب</h3>
+                    </div>
+                    
+                    <div id="results" class="space-y-6">
+                        <div class="text-center py-12">
+                            <div class="text-6xl mb-4">📊</div>
+                            <p class="text-gray-500 text-lg">أدخل بياناتك واضغط على "احسب واحصل على الخطة"</p>
+                            <p class="text-gray-400 mt-2">سيتم حساب احتياجاتك وعرض النتائج هنا</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Meal Plan Page -->
+        <section id="meal-plan-page" class="page">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-dark mb-4">خطة التغذية الشهرية</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">خطة وجبات متنوعة لمدة 30 يوم بدون تكرار</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-8 border-b border-gray-100">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold text-dark mb-2">جدول الوجبات الأسبوعي</h3>
+                            <div class="flex items-center space-x-4 space-x-reverse mt-2">
+                                <span class="px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium" id="planTypeDisplay">-</span>
+                                <span class="px-4 py-1 bg-secondary/10 text-secondary rounded-full text-sm font-medium" id="goalDisplay">-</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-4 space-x-reverse mt-6 md:mt-0">
+                            <button id="prevWeek" class="px-5 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <span id="weekDisplay" class="px-6 py-2 font-bold text-lg text-dark">الأسبوع 1</span>
+                            <button id="nextWeek" class="px-5 py-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-8" id="mealPlanContent">
+                    <!-- سيتم ملؤها بالذكاء الاصطناعي -->
+                    <div class="text-center py-16">
+                        <div class="text-6xl mb-4">🍽️</div>
+                        <p class="text-gray-500 text-lg">يجب إدخال بياناتك في صفحة الحاسبة أولاً</p>
+                        <button onclick="switchPage('calculator')" class="mt-6 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
+                            الذهاب للحاسبة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Workout Plans Page -->
+        <section id="workout-page" class="page">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-dark mb-4">برامج التمارين المتخصصة</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">اختر نظام التمارين المناسب لك</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <button data-system="bro_split" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
+                    <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-dumbbell text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">برو سبلت</h3>
+                    <p class="text-gray-600 text-sm">عضلة واحدة في اليوم</p>
+                </button>
+                
+                <button data-system="push_pull_legs" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
+                    <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-exchange-alt text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">بوش بول ليج</h3>
+                    <p class="text-gray-600 text-sm">دفع - سحب - أرجل</p>
+                </button>
+                
+                <button data-system="arnold_split" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
+                    <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-trophy text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">أرنولد سبلت</h3>
+                    <p class="text-gray-600 text-sm">برنامج أرنولد شوارزنيجر</p>
+                </button>
+                
+                <button data-system="full_body" class="workout-system-btn bg-white rounded-2xl shadow-lg p-6 text-center transform hover:scale-[1.02] transition-all duration-200 border-2 border-transparent hover:border-primary">
+                    <div class="gradient-bg text-white p-4 rounded-2xl w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-user text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-dark mb-2">تمارين كاملة</h3>
+                    <p class="text-gray-600 text-sm">تمرين كامل الجسم</p>
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div id="workoutPlanContent">
+                    <div class="text-center py-16">
+                        <div class="text-6xl mb-4">💪</div>
+                        <p class="text-gray-500 text-lg">اختر نظام التمارين أعلاه لعرض برنامجك</p>
+                        <p class="text-gray-400 mt-2">يجب إدخال بياناتك في صفحة الحاسبة أولاً</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4 text-center">
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-white p-3 rounded-full mb-4">
+                    <i class="fas fa-dumbbell text-primary text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">تطبيق اللياقة والتغذية</h3>
+                <p class="text-gray-400 max-w-md">خطط تغذية وتمارين مخصصة لك</p>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 text-gray-400">
+                <p>© 2024 جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // API Configuration
+        const DEEPSEEK_API_KEY = "sk-5c035232a4174c4a8d76f8175f19293b";
+        const DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
+
+        // Application State
+        let currentWeek = 1;
+        let userData = null;
+        let currentWorkoutSystem = null;
+
+        // Initialize
+        document.addEventListener("DOMContentLoaded", function() {
+            setupEventListeners();
+            
+            // Load user data from localStorage if exists
+            const savedData = localStorage.getItem('userData');
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                updatePageContents();
+            }
+        });
+
+        function setupEventListeners() {
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    switchPage(page);
+                });
+            });
+
+            // Calculator form
+            const calculatorForm = document.getElementById("calculatorForm");
+            if (calculatorForm) {
+                calculatorForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    calculateNutrition();
+                });
+            }
+            
+            // Workout system buttons
+            document.querySelectorAll(".workout-system-btn").forEach(button => {
+                button.addEventListener("click", function() {
+                    const system = this.getAttribute("data-system");
+                    currentWorkoutSystem = system;
+                    
+                    // Update active button
+                    document.querySelectorAll(".workout-system-btn").forEach(btn => {
+                        btn.classList.remove("border-primary");
+                    });
+                    this.classList.add("border-primary");
+                    
+                    if (userData) {
+                        generateWorkoutPlan(system);
+                    } else {
+                        showNotification("يجب إدخال بياناتك أولاً في صفحة الحاسبة", "error");
+                        switchPage('calculator');
+                    }
+                });
+            });
+            
+            // Week navigation
+            const prevWeekBtn = document.getElementById("prevWeek");
+            const nextWeekBtn = document.getElementById("nextWeek");
+            
+            if (prevWeekBtn) {
+                prevWeekBtn.addEventListener("click", function() {
+                    if (currentWeek > 1) {
+                        currentWeek--;
+                        updateWeekDisplay();
+                        if (userData) generateMealPlan();
+                    }
+                });
+            }
+            
+            if (nextWeekBtn) {
+                nextWeekBtn.addEventListener("click", function() {
+                    if (currentWeek < 4) {
+                        currentWeek++;
+                        updateWeekDisplay();
+                        if (userData) generateMealPlan();
+                    }
+                });
+            }
+        }
+
+        function switchPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('nav-active');
+            });
+            
+            // Show selected page
+            const pageElement = document.getElementById(pageName + '-page');
+            if (pageElement) {
+                pageElement.classList.add('active');
+                
+                // Add active class to selected nav item
+                document.querySelector(`.nav-item[data-page="${pageName}"]`).classList.add('nav-active');
+                
+                // Update content if user data exists
+                if (userData) {
+                    updatePageContents();
+                }
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function updatePageContents() {
+            if (!userData) return;
+            
+            // Update meal plan if on meal plan page
+            const mealPlanPage = document.getElementById('meal-plan-page');
+            if (mealPlanPage.classList.contains('active')) {
+                generateMealPlan();
+            }
+            
+            // Update workout plan if on workout page
+            const workoutPage = document.getElementById('workout-page');
+            if (workoutPage.classList.contains('active')) {
+                if (currentWorkoutSystem) {
+                    generateWorkoutPlan(currentWorkoutSystem);
+                }
+            }
+            
+            // Update calculator results if on calculator page
+            const calculatorPage = document.getElementById('calculator-page');
+            if (calculatorPage.classList.contains('active')) {
+                displayNutritionResults(userData);
+            }
+        }
+
+        function calculateNutrition() {
+            // Collect user data
+            const weight = parseFloat(document.getElementById("weight").value);
+            const height = parseFloat(document.getElementById("height").value);
+            const age = parseInt(document.getElementById("age").value);
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const goal = document.getElementById("goal").value;
+            const workoutSystem = document.getElementById("workoutSystem").value;
+            const experience = document.getElementById("experience").value;
+            const workoutDays = document.getElementById("workoutDays").value;
+            const planType = document.getElementById("planType").value;
+            
+            // Validation
+            if (!weight || !height || !age) {
+                showNotification("يرجى ملء جميع الحقول المطلوبة", "error");
+                return;
+            }
+            
+            if (weight < 30 || weight > 200) {
+                showNotification("الوزن يجب أن يكون بين 30 و 200 كجم", "error");
+                return;
+            }
+            
+            if (height < 100 || height > 250) {
+                showNotification("الطول يجب أن يكون بين 100 و 250 سم", "error");
+                return;
+            }
+            
+            if (age < 15 || age > 80) {
+                showNotification("العمر يجب أن يكون بين 15 و 80 سنة", "error");
+                return;
+            }
+            
+            // Show loading
+            const submitBtn = document.querySelector('#calculatorForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="loading"></div> جاري الحساب...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Calculate BMR using Mifflin-St Jeor Equation
+                let bmr;
+                if (gender === "male") {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+                } else {
+                    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+                }
+                
+                // Set activity factor (default moderate activity)
+                const activity = 1.55;
+                
+                // Calculate TDEE
+                let tdee = bmr * activity;
+                
+                // Adjust based on goal
+                let calorieTarget, proteinMultiplier, fatPercentage;
+                
+                switch(goal) {
+                    case "cutting":
+                        calorieTarget = tdee * 0.85; // 15% deficit
+                        proteinMultiplier = 2.2; // Higher protein for cutting
+                        fatPercentage = 0.25;
+                        break;
+                    case "bulking":
+                        calorieTarget = tdee * 1.15; // 15% surplus
+                        proteinMultiplier = 1.8;
+                        fatPercentage = 0.25;
+                        break;
+                    default: // maintain
+                        calorieTarget = tdee;
+                        proteinMultiplier = 1.6;
+                        fatPercentage = 0.25;
+                }
+                
+                // Adjust for Ramadan if selected
+                if (planType === "ramadan") {
+                    calorieTarget *= 0.9; // 10% reduction for Ramadan
+                }
+                
+                // Calculate macronutrients
+                const proteinGrams = Math.round(weight * proteinMultiplier);
+                const proteinCalories = proteinGrams * 4;
+                
+                const fatCalories = Math.round(calorieTarget * fatPercentage);
+                const fatGrams = Math.round(fatCalories / 9);
+                
+                const carbCalories = Math.round(calorieTarget - proteinCalories - fatCalories);
+                const carbGrams = Math.round(carbCalories / 4);
+                
+                // Save user data
+                userData = {
+                    weight: weight,
+                    height: height,
+                    age: age,
+                    gender: gender,
+                    goal: goal,
+                    workoutSystem: workoutSystem,
+                    experience: experience,
+                    workoutDays: workoutDays,
+                    planType: planType,
+                    calories: Math.round(calorieTarget),
+                    protein: proteinGrams,
+                    carbs: carbGrams,
+                    fat: fatGrams,
+                    tdee: Math.round(tdee),
+                    bmr: Math.round(bmr)
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Display results
+                displayNutritionResults(userData);
+                
+                // Switch to meal plan page
+                setTimeout(() => {
+                    switchPage('meal-plan');
+                    showNotification("تم حساب احتياجاتك الغذائية بنجاح", "success");
+                }, 500);
+                
+            } catch (error) {
+                console.error("Error:", error);
+                showNotification("حدث خطأ في الحساب", "error");
+            } finally {
+                // Restore button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function displayNutritionResults(data) {
+            const resultsDiv = document.getElementById("results");
+            if (!resultsDiv) return;
+            
+            const goalText = data.goal === "cutting" ? "تنشيف" : data.goal === "bulking" ? "تضخيم" : "محافظة";
+            const planTypeText = data.planType === "ramadan" ? "رمضان" : "عادي";
+            
+            const resultsHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-primary mb-2">${data.calories}</div>
+                        <div class="text-gray-600">سعرة حرارية</div>
+                        <div class="text-sm text-gray-500 mt-1">الهدف اليومي</div>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-secondary mb-2">${data.protein} غ</div>
+                        <div class="text-gray-600">بروتين</div>
+                        <div class="text-sm text-gray-500 mt-1">${data.protein * 4} سعرة</div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-yellow-600 mb-2">${data.carbs} غ</div>
+                        <div class="text-gray-600">كربوهيدرات</div>
+                        <div class="text-sm text-gray-500 mt-1">${data.carbs * 4} سعرة</div>
+                    </div>
+                    
+                    <div class="bg-purple-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-purple-600 mb-2">${data.fat} غ</div>
+                        <div class="text-gray-600">دهون</div>
+                        <div class="text-sm text-gray-500 mt-1">${data.fat * 9} سعرة</div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-gray-700 mb-2">${data.tdee}</div>
+                        <div class="text-gray-600">TDEE</div>
+                        <div class="text-sm text-gray-500 mt-1">إجمالي الإنفاق</div>
+                    </div>
+                    
+                    <div class="bg-red-50 p-4 rounded-xl text-center">
+                        <div class="text-2xl font-bold text-red-600 mb-2">${data.bmr}</div>
+                        <div class="text-gray-600">BMR</div>
+                        <div class="text-sm text-gray-500 mt-1">معدل الأيض الأساسي</div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-6">
+                    <h4 class="font-bold text-dark mb-4">توصيات مخصصة:</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-primary rounded-full ml-2"></div>
+                            <span>الهدف: <span class="font-bold">${goalText}</span></span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-secondary rounded-full ml-2"></div>
+                            <span>نوع الخطة: <span class="font-bold">${planTypeText}</span></span>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-accent rounded-full ml-2"></div>
+                            <span>أيام التمرين: <span class="font-bold">${data.workoutDays} يوم أسبوعياً</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center pt-6">
+                    <button onclick="switchPage('meal-plan')" class="gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg">
+                        شاهد خطة التغذية <i class="fas fa-arrow-left ml-2"></i>
+                    </button>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = resultsHTML;
+        }
+
+        async function generateMealPlan() {
+            if (!userData) return;
+            
+            const mealPlanContent = document.getElementById("mealPlanContent");
+            const planTypeDisplay = document.getElementById("planTypeDisplay");
+            const goalDisplay = document.getElementById("goalDisplay");
+            
+            // Show loading
+            mealPlanContent.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="loading mx-auto mb-4" style="width: 40px; height: 40px;"></div>
+                    <p class="text-gray-600 text-lg">جاري إنشاء خطة التغذية...</p>
+                </div>
+            `;
+            
+            // Update displays
+            if (planTypeDisplay) {
+                planTypeDisplay.textContent = userData.planType === "ramadan" ? "رمضان" : "عادي";
+            }
+            if (goalDisplay) {
+                goalDisplay.textContent = userData.goal === "cutting" ? "تنشيف" : userData.goal === "bulking" ? "تضخيم" : "محافظة";
+            }
+            
+            // Update week display
+            updateWeekDisplay();
+            
+            try {
+                // Create local meal plan without API call
+                const mealPlan = createLocalMealPlan();
+                
+                // Display the meal plan
+                mealPlanContent.innerHTML = mealPlan;
+                
+            } catch (error) {
+                console.error("Error generating meal plan:", error);
+                mealPlanContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">😕</div>
+                        <p class="text-gray-600 text-lg">حدث خطأ في إنشاء خطة التغذية</p>
+                        <button onclick="generateMealPlan()" class="mt-6 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
+                            إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function createLocalMealPlan() {
+            const days = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+            const meals = {
+                breakfast: [
+                    "شوفان مع حليب وموز",
+                    "عجة بيض مع خضار",
+                    "سموذي بروتين بالتمر",
+                    "خبز توست مع أفوكادو",
+                    "لبن يوناني مع توت",
+                    "فول مدمس مع زيت زيتون",
+                    "بان كيك بروتين"
+                ],
+                lunch: [
+                    "صدر دجاج مشوي مع أرز بني",
+                    "سمك سلمون مع بطاطا حلوة",
+                    "لحم بقري مع خضار سوتيه",
+                    "برجر دجاج مع سلطة",
+                    "معكرونة مع دجاج و صلصة",
+                    "كوسة محشية باللحم",
+                    "شوربة عدس مع خبز"
+                ],
+                dinner: [
+                    "سلطة تونة مع خضار",
+                    "أومليت بيض مع جبن",
+                    "سلمون مع بروكلي",
+                    "شوربة خضار مع دجاج",
+                    "زبادي يوناني مع مكسرات",
+                    "سندويش تونة مع خس",
+                    "بيض مسلوق مع أفوكادو"
+                ],
+                snacks: [
+                    "تفاحة مع زبدة فول سوداني",
+                    "مكسرات مشكلة",
+                    "بروتين شيك",
+                    "جبنة قريش",
+                    "حبات تمر",
+                    "خيار وجزر",
+                    "شوكولاتة داكنة"
+                ]
+            };
+            
+            let html = '<div class="space-y-8">';
+            
+            // Calculate base calories per meal based on user's target
+            const dailyCalories = userData.calories;
+            const mealCalories = {
+                breakfast: Math.round(dailyCalories * 0.25),
+                lunch: Math.round(dailyCalories * 0.35),
+                dinner: Math.round(dailyCalories * 0.25),
+                snacks: Math.round(dailyCalories * 0.15)
+            };
+            
+            // Adjust for Ramadan
+            if (userData.planType === "ramadan") {
+                mealCalories.breakfast = Math.round(dailyCalories * 0.40); // Iftar
+                mealCalories.lunch = 0; // No lunch in Ramadan
+                mealCalories.dinner = Math.round(dailyCalories * 0.30); // Suhoor
+                mealCalories.snacks = Math.round(dailyCalories * 0.30); // Between Iftar and Suhoor
+            }
+            
+            days.forEach((day, dayIndex) => {
+                const weekOffset = (currentWeek - 1) * 7;
+                const mealIndex = (weekOffset + dayIndex) % 7;
+                
+                html += `
+                    <div class="bg-gray-50 rounded-2xl p-6">
+                        <h4 class="text-xl font-bold text-dark mb-6 pb-3 border-b border-gray-200">${day} - الأسبوع ${currentWeek}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            ${userData.planType === "ramadan" ? `
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">الإفطار</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.lunch[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.breakfast} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.35)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">بين الإفطار والسحور</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.snacks[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.snacks} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.15)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-purple-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">سحور</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.dinner[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.dinner} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.30)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">وجبة خفيفة</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.breakfast[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${Math.round(mealCalories.snacks * 0.5)} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.10)}غ بروتين</span>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">الفطور</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.breakfast[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.breakfast} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.25)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">الغداء</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.lunch[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.lunch} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.35)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-purple-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">العشاء</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.dinner[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.dinner} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.25)}غ بروتين</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white p-5 rounded-xl shadow-sm">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full ml-2"></div>
+                                        <h5 class="font-bold text-gray-800">وجبات خفيفة</h5>
+                                    </div>
+                                    <p class="text-gray-700 mb-2">${meals.snacks[mealIndex]}</p>
+                                    <div class="flex justify-between text-sm text-gray-500">
+                                        <span>${mealCalories.snacks} سعرة</span>
+                                        <span>${Math.round(userData.protein * 0.15)}غ بروتين</span>
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6 mt-8">
+                    <h4 class="font-bold text-dark mb-4">ملاحظات الأسبوع ${currentWeek}:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h5 class="font-bold text-gray-800 mb-2">📝 نصائح عامة:</h5>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>• اشرب 3-4 لتر ماء يومياً</li>
+                                <li>• تناول الخضروات مع كل وجبة</li>
+                                <li>• تجنب السكريات المضافة</li>
+                                ${userData.planType === "ramadan" ? '<li>• استمر في شرب الماء بين الإفطار والسحور</li>' : ''}
+                            </ul>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-gray-800 mb-2">🎯 حسب هدفك (${userData.goal === 'cutting' ? 'تنشيف' : userData.goal === 'bulking' ? 'تضخيم' : 'محافظة'}):</h5>
+                            <ul class="space-y-2 text-gray-600">
+                                ${userData.goal === 'cutting' ? 
+                                    '<li>• تناول البروتين مع كل وجبة</li><li>• قلل الكربوهيدرات المساء</li><li>• امش 30 دقيقة يومياً</li>' :
+                                  userData.goal === 'bulking' ?
+                                    '<li>• زد الكربوهيدرات بعد التمرين</li><li>• تناول وجبة قبل النوم</li><li>• ركز على تمارين القوة</li>' :
+                                    '<li>• حافظ على توازن الوجبات</li><li>• مارس الرياضة بانتظام</li><li>• تابع وزنك أسبوعياً</li>'
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            return html;
+        }
+
+        async function generateWorkoutPlan(system) {
+            if (!userData) return;
+            
+            const workoutPlanContent = document.getElementById("workoutPlanContent");
+            
+            // Show loading
+            workoutPlanContent.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="loading mx-auto mb-4" style="width: 40px; height: 40px;"></div>
+                    <p class="text-gray-600 text-lg">جاري إنشاء برنامج التمارين...</p>
+                </div>
+            `;
+            
+            try {
+                // Create local workout plan
+                const workoutPlan = createLocalWorkoutPlan(system);
+                
+                // Display the workout plan
+                workoutPlanContent.innerHTML = workoutPlan;
+                
+            } catch (error) {
+                console.error("Error generating workout plan:", error);
+                workoutPlanContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="text-6xl mb-4">😕</div>
+                        <p class="text-gray-600 text-lg">حدث خطأ في إنشاء برنامج التمارين</p>
+                        <button onclick="generateWorkoutPlan('${system}')" class="mt-6 gradient-bg hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition-all duration-200">
+                            إعادة المحاولة
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function createLocalWorkoutPlan(system) {
+            const workoutDays = parseInt(userData.workoutDays);
+            let workoutStructure = [];
+            
+            // Define workout structures based on system
+            switch(system) {
+                case 'bro_split':
+                    const broSplitDays = [
+                        "الصدر",
+                        "الظهر",
+                        "الأرجل",
+                        "الأكتاف",
+                        "الذراعين",
+                        "الراحة",
+                        "الراحة"
+                    ].slice(0, workoutDays);
+                    
+                    if (workoutDays < 5) {
+                        // Combine arms with shoulders for fewer days
+                        broSplitDays[3] = "الأكتاف والذراعين";
+                        broSplitDays.length = workoutDays;
+                    }
+                    
+                    workoutStructure = broSplitDays;
+                    break;
+                    
+                case 'push_pull_legs':
+                    const pplCycle = ["دفع (صدر، أكتاف، تراي)", "سحب (ظهر، باي)", "أرجل"];
+                    workoutStructure = [];
+                    
+                    for (let i = 0; i < workoutDays; i++) {
+                        workoutStructure.push(pplCycle[i % 3]);
+                    }
+                    break;
+                    
+                case 'arnold_split':
+                    const arnoldSplit = [
+                        "الصدر والظهر",
+                        "الأكتاف والذراعين",
+                        "الأرجل وأسفل الظهر",
+                        "الصدر والظهر",
+                        "الأكتاف والذراعين",
+                        "الأرجل وأسفل الظهر",
+                        "الراحة"
+                    ].slice(0, workoutDays);
+                    workoutStructure = arnoldSplit;
+                    break;
+                    
+                case 'full_body':
+                    for (let i = 0; i < workoutDays; i++) {
+                        workoutStructure.push("كامل الجسم");
+                    }
+                    break;
+            }
+            
+            // Exercises database
+            const exercises = {
+                chest: ["بنش برس", "إنكلاین دمبل", "كابل كروس", "پوش أب"],
+                back: ["لت پول داون", "باربل رو", "سینتد كابل رو", "فيس پول"],
+                legs: ["سكوات", "لنجز", "ليج پريس", "كالف رايز"],
+                shoulders: ["میلتري پريس", "لیترال رايز", "فرونت رايز", "ریار دیلت"],
+                arms: ["باربل كيرل", "ترايسبس پوش داون", "هاممر كيرل", "أوفر هيد ترايسبس"],
+                push: ["بنش برس", "أوفر هيد پريس", "دامبل فلای", "لیترال رايز", "ترايسبس پوش داون"],
+                pull: ["لت پول داون", "باربل رو", "فيس پول", "باربل كيرل", "هامر كيرل"],
+                full: ["سكوات", "بنش برس", "لت پول داون", "میلتري پريس", "باربل رو"]
+            };
+            
+            let html = '<div class="space-y-8">';
+            
+            // Workout plan header
+            html += `
+                <div class="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-dark mb-2">برنامج ${system === 'bro_split' ? 'برو سبلت' : system === 'push_pull_legs' ? 'بوش بول ليج' : system === 'arnold_split' ? 'أرنولد سبلت' : 'كامل الجسم'}</h3>
+                            <p class="text-gray-600">مصمم خصيصاً لهدفك (${userData.goal === 'cutting' ? 'تنشيف' : userData.goal === 'bulking' ? 'تضخيم' : 'محافظة'})</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <span class="px-4 py-2 bg-primary text-white rounded-full text-sm font-bold">${workoutDays} أيام/أسبوع</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Workout days
+            workoutStructure.forEach((day, index) => {
+                let dayExercises = [];
+                let sets = 0;
+                let reps = "";
+                
+                // Determine exercises based on day focus
+                if (day.includes("الصدر")) dayExercises = exercises.chest;
+                else if (day.includes("الظهر")) dayExercises = exercises.back;
+                else if (day.includes("الأرجل")) dayExercises = exercises.legs;
+                else if (day.includes("الأكتاف")) dayExercises = exercises.shoulders;
+                else if (day.includes("الذراعين")) dayExercises = exercises.arms;
+                else if (day.includes("دفع")) dayExercises = exercises.push;
+                else if (day.includes("سحب")) dayExercises = exercises.pull;
+                else if (day.includes("كامل")) dayExercises = exercises.full;
+                else if (day.includes("الصدر والظهر")) dayExercises = [...exercises.chest.slice(0,2), ...exercises.back.slice(0,2)];
+                else if (day.includes("الأكتاف والذراعين")) dayExercises = [...exercises.shoulders.slice(0,2), ...exercises.arms.slice(0,2)];
+                else if (day.includes("الأرجل وأسفل الظهر")) dayExercises = [...exercises.legs.slice(0,3), ...exercises.back.slice(2,3)];
+                
+                // Adjust for goal
+                if (userData.goal === 'cutting') {
+                    sets = 3;
+                    reps = "12-15 تكرار";
+                } else if (userData.goal === 'bulking') {
+                    sets = 4;
+                    reps = "8-10 تكرار";
+                } else {
+                    sets = 3;
+                    reps = "10-12 تكرار";
+                }
+                
+                // Adjust for experience
+                if (userData.experience === 'beginner') {
+                    sets = Math.max(2, sets - 1);
+                } else if (userData.experience === 'advanced') {
+                    sets += 1;
+                }
+                
+                html += `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm">
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 gradient-bg text-white rounded-xl flex items-center justify-center font-bold ml-4">
+                                ${index + 1}
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold text-dark">${day}</h4>
+                                <p class="text-gray-500 text-sm">اليوم ${index + 1}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="py-3 px-4 text-right font-bold text-gray-700">التمرين</th>
+                                        <th class="py-3 px-4 text-right font-bold text-gray-700">المجموعات</th>
+                                        <th class="py-3 px-4 text-right font-bold text-gray-700">التكرارات</th>
+                                        <th class="py-3 px-4 text-right font-bold text-gray-700">الراحة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                
+                dayExercises.forEach(exercise => {
+                    const restTime = userData.goal === 'cutting' ? "60 ثانية" : "90 ثانية";
+                    html += `
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-3 px-4 font-medium text-gray-800">${exercise}</td>
+                            <td class="py-3 px-4 text-gray-600">${sets}</td>
+                            <td class="py-3 px-4 text-gray-600">${reps}</td>
+                            <td class="py-3 px-4 text-gray-600">${restTime}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        ${userData.goal === 'cutting' && day !== 'الراحة' ? `
+                            <div class="mt-6 p-4 bg-red-50 rounded-xl">
+                                <div class="flex items-center">
+                                    <i class="fas fa-fire text-red-500 ml-2"></i>
+                                    <span class="font-bold text-red-700">تمارين كارديو إضافية:</span>
+                                </div>
+                                <p class="text-gray-600 mt-2">أضف 20-30 دقيقة من المشي السريع أو الدراجة بعد التمرين</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            // Tips section
+            html += `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm">
+                        <h4 class="font-bold text-dark mb-4">💡 نصائح مهمة:</h4>
+                        <ul class="space-y-3 text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 ml-2"></i>
+                                <span>إحماء 10 دقائق قبل التمرين</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 ml-2"></i>
+                                <span>اشرب الماء أثناء وبعد التمرين</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 ml-2"></i>
+                                <span>حافظ على الشكل الصحيح للتمارين</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mt-1 ml-2"></i>
+                                <span>نام 7-8 ساعات للاستشفاء</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl p-6 shadow-sm">
+                        <h4 class="font-bold text-dark mb-4">📊 حسب هدفك:</h4>
+                        <ul class="space-y-3 text-gray-600">
+                            ${userData.goal === 'cutting' ? `
+                                <li>• ركز على الشكل أكثر من الوزن</li>
+                                <li>• زد الكارديو تدريجياً</li>
+                                <li>• راقب السعرات الحرارية</li>
+                                <li>• لا تتخطى وجبات البروتين</li>
+                            ` : userData.goal === 'bulking' ? `
+                                <li>• ركز على زيادة الأوزان تدريجياً</li>
+                                <li>• تناول وجبة بعد التمرين مباشرة</li>
+                                <li>• احصل على سعرات فائضة يومياً</li>
+                                <li>• ركز على تمارين الأساسيات</li>
+                            ` : `
+                                <li>• حافظ على شدة التمارين</li>
+                                <li>• وازن بين السعرات الداخلة والخارجة</li>
+                                <li>• تنويع في التمارين أسبوعياً</li>
+                                <li>• تابع وزنك وقياساتك</li>
+                            `}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function updateWeekDisplay() {
+            const weekDisplay = document.getElementById("weekDisplay");
+            if (weekDisplay) {
+                weekDisplay.textContent = `الأسبوع ${currentWeek}`;
+                
+                // Update button states
+                const prevWeekBtn = document.getElementById("prevWeek");
+                const nextWeekBtn = document.getElementById("nextWeek");
+                
+                if (prevWeekBtn) {
+                    prevWeekBtn.disabled = currentWeek === 1;
+                    prevWeekBtn.classList.toggle("opacity-50", currentWeek === 1);
+                    prevWeekBtn.classList.toggle("cursor-not-allowed", currentWeek === 1);
+                }
+                
+                if (nextWeekBtn) {
+                    nextWeekBtn.disabled = currentWeek === 4;
+                    nextWeekBtn.classList.toggle("opacity-50", currentWeek === 4);
+                    nextWeekBtn.classList.toggle("cursor-not-allowed", currentWeek === 4);
+                }
+            }
+        }
+
+        function showNotification(message, type = "info") {
+            // Create notification element
+            const notification = document.createElement("div");
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-lg text-white font-bold transform transition-all duration-300 ${
+                type === "success" ? "bg-gradient-to-r from-green-500 to-green-600" :
+                type === "error" ? "bg-gradient-to-r from-red-500 to-red-600" :
+                "bg-gradient-to-r from-blue-500 to-blue-600"
+            }`;
+            notification.textContent = message;
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = "translateX(100%)";
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Make functions global for HTML onclick
+        window.switchPage = switchPage;
+        window.generateWorkoutPlan = generateWorkoutPlan;
+    </script>
+</body>
+</html>
